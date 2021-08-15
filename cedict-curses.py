@@ -1,5 +1,5 @@
 import curses
-from sys import stderr
+from sys import stderr, argv
 from cedict_utils.cedict import CedictParser
 from dragonmapper import transcriptions
 import curses
@@ -7,6 +7,7 @@ import pyperclip
 
 
 parser = CedictParser()
+
 try:
     parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
 except FileNotFoundError:
@@ -14,6 +15,7 @@ except FileNotFoundError:
     print("https://www.mdbg.net/chinese/dictionary?page=cedict",file=stderr)
     print("and extract it in this folder.",file=stderr)
     exit(1)
+
 entries = parser.parse()
 
 dictionary = {}
@@ -59,13 +61,16 @@ def main(stdscr: curses.window):
     cursor = 0
     update = True
 
-    def read_clipboard():
+    def update_sentence(s):
         nonlocal sentence, words, update
-        sentence = pyperclip.paste()
+        sentence = s
         words = find_all_words(sentence)
         update = True
     
-    read_clipboard()
+    if len(argv) <= 1:
+        update_sentence(pyperclip.paste())
+    else:
+        update_sentence(argv[1])
 
     while True:
         if update:
@@ -101,15 +106,21 @@ def main(stdscr: curses.window):
 
                     stdscr.addstr(line, pos, "（")
                     pos += 1
+                    
+                    # for i in range(len(pinyins)):
+                    #     stdscr.addstr(line, pos, pinyins[i], curses.color_pair(colors[i]))
+                    #     pos += len(pinyins[i])
+                    
+                    # stdscr.addstr(line, pos, "｜")
+                    # pos += 1    
+                    
                     for i in range(len(pinyins)):
                         try:
                             z = transcriptions.pinyin_to_zhuyin(pinyins[i])
                         except ValueError:
                             z = pinyins[i]
                         stdscr.addstr(line, pos, z, curses.color_pair(colors[i]))
-                        pos += len(z)
-                        stdscr.addstr(line, pos, " ˉˊˇˋ˙"[colors[i]], curses.color_pair(colors[i]))
-                        pos += 1
+                        pos += len(z)+6
 
                     stdscr.addstr(line, pos, "）：")
                     pos += 2
@@ -125,7 +136,7 @@ def main(stdscr: curses.window):
         if key == ord('q'):
             return
         elif key == ord(' '):
-            read_clipboard()
+            update_sentence(pyperclip.paste())
         elif key == curses.KEY_LEFT:
             if cursor > 0:
                 cursor -= 1
