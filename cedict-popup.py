@@ -1,4 +1,5 @@
 import curses
+from sys import stderr
 from cedict_utils.cedict import CedictParser
 from dragonmapper import transcriptions
 import curses
@@ -6,7 +7,13 @@ import pyperclip
 
 
 parser = CedictParser()
-parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
+try:
+    parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
+except FileNotFoundError:
+    print("Could not find dictionary file 'cedict_1_0_ts_utf-8_mdbg.txt'! Please download CC-CEDICT from",file=stderr)
+    print("https://www.mdbg.net/chinese/dictionary?page=cedict",file=stderr)
+    print("and extract it in this folder.",file=stderr)
+    exit(1)
 entries = parser.parse()
 
 dictionary = {}
