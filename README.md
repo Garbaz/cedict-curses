@@ -1,13 +1,13 @@
 # CEDICT Curses
 
-Interactively analyze a Chinese sentence and look up words in the CC-CEDCIT dictionary.
+Interactively analysing a Chinese sentence and look up words in the CC-CEDCIT dictionary.
 
 ![screenshot](Screenshot.png)
 
 ## Features
 
 * Read sentence from clipboard or command-line argument
-* Show Pinyin or [Zhuyin](https://en.wikipedia.org/wiki/Bopomofo) with tone colors for readings
+* Show Pinyin or [Zhuyin](https://en.wikipedia.org/wiki/Bopomofo) with tone colours for readings
 * Add words to [Anki](https://apps.ankiweb.net/) (using [Anki Connect](https://foosoft.net/projects/anki-connect/))
   
 ## Requirements
@@ -47,7 +47,7 @@ Inside the program you can use the following keys:
 | LEFT | Move left in the sentence |
 | DOWN | Select the next result |
 | UP | Select the previous result |
-| r | Toggle between pinyin and zhuyin |
+| r | Toggle between Pinyin and Zhuyin |
 | a | Add selected result to / show in Anki |
 | f | Search selected result on [forvo.com](https://forvo.com/) |
 
