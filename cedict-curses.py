@@ -130,7 +130,9 @@ def main(stdscr: curses.window):
                                 except ValueError:
                                     z = pinyins[i]
                                 stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
-                                pos += len(z) + 1
+                                pos += len(z)
+                                if z[-1] in "ˉˇˋˊ˙":
+                                    pos+=1
                                 stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
                                 pos += 2
                             else:
@@ -182,7 +184,7 @@ def main(stdscr: curses.window):
         elif key == ord("r"):
             show_zhuyin = not show_zhuyin
             update = True
-        elif key == ord("a"):
+        elif key == ord("a") or key == ord("\n"):
             try:
                 word = results[result_selection][1]
                 query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
