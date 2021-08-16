@@ -4,6 +4,7 @@ from cedict_utils.cedict import CedictParser
 from dragonmapper import transcriptions
 import curses
 import pyperclip
+import webbrowser
 
 from settings import *
 from anki import anki
@@ -158,9 +159,9 @@ def main(stdscr: curses.window):
 
         stdscr.refresh()
         key = stdscr.getch()
-        if key == ord('q'):
+        if key == ord("q"):
             return
-        elif key == ord(' '):
+        elif key == ord(" "):
             update_sentence(pyperclip.paste())
         elif key == curses.KEY_LEFT:
             if cursor > 0:
@@ -201,6 +202,9 @@ def main(stdscr: curses.window):
             except Exception as e:
                 y, _ = stdscr.getmaxyx()
                 stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
+        elif key == ord("f"):
+            webbrowser.open_new(f"https://forvo.com/word/{results[result_selection][1]}/#zh")
+
 
 
 curses.wrapper(main)

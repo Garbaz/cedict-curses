@@ -16,6 +16,7 @@ Interactively analyze a Chinese sentence and look up words in the CC-CEDCIT dict
 * `cedict_utils`
 * `dragonmapper`
 * `pyperclip`
+* `webbrowser`
 
 The following command should do the trick:
 
@@ -23,7 +24,7 @@ The following command should do the trick:
 python3 -m pip install cedict_utils dragonmapper pyperclip
 ```
 
-(`curses` should already be included with the python standard library)
+(`curses` and `webbroser` should already be included with the python standard library)
 
 ## Usage
 
@@ -47,6 +48,7 @@ Inside the program you can use the following keys:
 | UP | Select the previous result |
 | r | Toggle between pinyin and zhuyin |
 | a | Added selected result to / show in Anki |
+| f | Search selected result on [forvo.com](https://forvo.com/) |
 
 ## Anki
 
