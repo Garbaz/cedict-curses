@@ -5,6 +5,8 @@ from dragonmapper import transcriptions
 import curses
 import pyperclip
 
+from settings import *
+from anki import anki
 
 parser = CedictParser()
 
@@ -35,11 +37,6 @@ def find_all_words(s):
             if l is not None:
                 ret[i].append((word, l))
     return ret
-
-# for ws in find_all_words(sentence).values():
-#     for w in ws:
-#         print(w[0],w[1])
-# exit()
 
 
 def main(stdscr: curses.window):
@@ -123,15 +120,8 @@ def main(stdscr: curses.window):
                         stdscr.addstr(line, pos, "（")
                         pos += 1
 
-                        # for i in range(len(pinyins)):
-                        #     stdscr.addstr(line, pos, pinyins[i], curses.color_pair(colors[i]))
-                        #     pos += len(pinyins[i])
-
-                        # stdscr.addstr(line, pos, "｜")
-                        # pos += 1
-
                         for i in range(len(pinyins)):
-                            
+
                             if show_zhuyin:
                                 try:
                                     z = transcriptions.pinyin_to_zhuyin(pinyins[i])
@@ -162,12 +152,8 @@ def main(stdscr: curses.window):
 
         for r in results:
             stdscr.addstr(r[0], 0, "　")
-
         if result_selection < len(results):
             stdscr.addstr(results[result_selection][0], 0, "＞")
-            # stdscr.addstr(30,0,str(result_selection))
-        # for i in range(len(results)):
-        #     stdscr.addstr(30+i,0,str(results[i]))
 
         stdscr.refresh()
         key = stdscr.getch()
@@ -194,6 +180,26 @@ def main(stdscr: curses.window):
         elif key == ord("r"):
             show_zhuyin = not show_zhuyin
             update = True
+        elif key == ord("a"):
+            try:
+                word = results[result_selection][1]
+                query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
+                notes = anki('findNotes', query=query)
+                # stdscr.addstr(30,0,str(notes))
+                if len(notes) == 0:
+                    field_names = anki('modelFieldNames', modelName=CARD_TYPE)
+                    if WORD_FIELD in field_names:
+                        fields = {f: "" for f in field_names}
+                        fields[WORD_FIELD] = word
+                        anki('addNote', note={
+                            'deckName': DECK,
+                            'modelName': CARD_TYPE,
+                            'fields': fields,
+                            'options': {}, 'tags': []})
+                anki('guiBrowse', query=query)
+            except Exception as e:
+                y,_ = stdscr.getmaxyx()
+                stdscr.addstr(y-1,0,"Anki Error: " + str(e))
 
 
 curses.wrapper(main)
