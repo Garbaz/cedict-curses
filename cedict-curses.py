@@ -60,12 +60,17 @@ def main(stdscr: curses.window):
     words = [[]]
     cursor = 0
     update = True
+    results = []
+    result_selection = 0
+
+    show_zhuyin = True
 
     def update_sentence(s):
-        nonlocal sentence, words, update
+        nonlocal sentence, words, update, cursor
         sentence = s
         words = find_all_words(sentence)
         update = True
+        cursor = 0
 
     if len(argv) <= 1:
         update_sentence(pyperclip.paste())
@@ -77,62 +82,92 @@ def main(stdscr: curses.window):
             update = False
             stdscr.clear()
 
+            result_selection = 0
+            results = []
+
             stdscr.addstr(0, 0, sentence)
             stdscr.addstr(1, 0, ("　" * (cursor))+"￣＼")
 
             line = 3
-            for w in words[cursor]:
-                defs = w[1]
-                for d in defs:
-                    colors = []
-                    pinyins = d.pinyin.split(" ")
-                    for p in pinyins:
-                        if p[-1] in "12345":
-                            colors.append(int(p[-1]))
-                        else:
-                            colors.append(5)
 
-                    pos = 0
+            if cursor < len(words):
+                for w in words[cursor]:
+                    defs = w[1]
+                    for d in defs:
 
-                    for i in range(len(d.simplified)):
-                        stdscr.addstr(line, pos, d.simplified[i], curses.color_pair(colors[i]))
+                        results.append((line, d.simplified))
+
+                        colors = []
+                        pinyins = d.pinyin.split(" ")
+                        for p in pinyins:
+                            if p[-1] in "12345":
+                                colors.append(int(p[-1]))
+                            else:
+                                colors.append(5)
+
+                        pos = 0
+
+                        stdscr.addstr(line, pos, "　")
+                        pos += 2
+
+                        for i in range(len(d.simplified)):
+                            stdscr.addstr(line, pos, d.simplified[i], curses.color_pair(colors[i]))
+                            pos += 1
+
+                        stdscr.addstr(line, pos, "｜")
+                        pos += 1
+                        for i in range(len(d.traditional)):
+                            stdscr.addstr(line, pos, d.traditional[i], curses.color_pair(colors[i]))
+                            pos += 1
+
+                        stdscr.addstr(line, pos, "（")
                         pos += 1
 
-                    stdscr.addstr(line, pos, "｜")
-                    pos += 1
-                    for i in range(len(d.traditional)):
-                        stdscr.addstr(line, pos, d.traditional[i], curses.color_pair(colors[i]))
-                        pos += 1
+                        # for i in range(len(pinyins)):
+                        #     stdscr.addstr(line, pos, pinyins[i], curses.color_pair(colors[i]))
+                        #     pos += len(pinyins[i])
 
-                    stdscr.addstr(line, pos, "（")
-                    pos += 1
+                        # stdscr.addstr(line, pos, "｜")
+                        # pos += 1
 
-                    # for i in range(len(pinyins)):
-                    #     stdscr.addstr(line, pos, pinyins[i], curses.color_pair(colors[i]))
-                    #     pos += len(pinyins[i])
+                        for i in range(len(pinyins)):
+                            
+                            if show_zhuyin:
+                                try:
+                                    z = transcriptions.pinyin_to_zhuyin(pinyins[i])
+                                except ValueError:
+                                    z = pinyins[i]
+                                stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
+                                pos += len(z)
+                                stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
+                                pos += 2
+                            else:
+                                try:
+                                    p = transcriptions.ipa_to_pinyin(transcriptions.pinyin_to_ipa(pinyins[i]))
+                                except ValueError:
+                                    p = pinyins[i]
+                                stdscr.addstr(line, pos, p, curses.color_pair(colors[i]))
+                                pos += len(pinyins[i])
+                        pos -= 1
 
-                    # stdscr.addstr(line, pos, "｜")
-                    # pos += 1
+                        stdscr.addstr(line, pos, "）：")
+                        pos += 2
 
-                    for i in range(len(pinyins)):
-                        try:
-                            z = transcriptions.pinyin_to_zhuyin(pinyins[i])
-                        except ValueError:
-                            z = pinyins[i]
-                        stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
-                        pos += len(z)
-                        stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
-                        pos += 1
-                        # pos += len(z)+2
-
-                    stdscr.addstr(line, pos, "）：")
-                    pos += 2
-                    line += 1
-
-                    for m in d.meanings:
-                        stdscr.addstr(line, 4, m)
                         line += 1
-                    line += 1
+
+                        for m in d.meanings:
+                            stdscr.addstr(line, 4, m)
+                            line += 1
+                        line += 1
+
+        for r in results:
+            stdscr.addstr(r[0], 0, "　")
+
+        if result_selection < len(results):
+            stdscr.addstr(results[result_selection][0], 0, "＞")
+            # stdscr.addstr(30,0,str(result_selection))
+        # for i in range(len(results)):
+        #     stdscr.addstr(30+i,0,str(results[i]))
 
         stdscr.refresh()
         key = stdscr.getch()
@@ -149,10 +184,15 @@ def main(stdscr: curses.window):
                 cursor += 1
                 update = True
         elif key == curses.KEY_UP:
-            cursor = 0
-            update = True
+            if result_selection > 0:
+                result_selection -= 1
+                # update = True
         elif key == curses.KEY_DOWN:
-            cursor = len(sentence) - 1
+            if result_selection < len(results) - 1:
+                result_selection += 1
+                # update = True
+        elif key == ord("r"):
+            show_zhuyin = not show_zhuyin
             update = True
 
 
