@@ -34,4 +34,4 @@ Values:
     False - Pinyin
     True  - Zhuyin
 """
-DEFAULT_READING_ZHUYIN = True
+DEFAULT_READING_ZHUYIN = False

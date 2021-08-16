@@ -129,9 +129,9 @@ def main(stdscr: curses.window):
                                     z = transcriptions.pinyin_to_zhuyin(pinyins[i])
                                 except ValueError:
                                     z = pinyins[i]
-                                stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
+                                stdscr.addstr(line, pos, z, curses.color_pair(colors[i]))
                                 pos += len(z)
-                                stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
+                                # stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
                                 pos += 2
                             else:
                                 try:
