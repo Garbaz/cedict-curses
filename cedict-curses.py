@@ -8,6 +8,7 @@ import pyperclip
 from settings import *
 from anki import anki
 
+
 parser = CedictParser()
 
 try:
@@ -60,11 +61,11 @@ def main(stdscr: curses.window):
     results = []
     result_selection = 0
 
-    show_zhuyin = True
+    show_zhuyin = DEFAULT_READING_ZHUYIN
 
     def update_sentence(s):
         nonlocal sentence, words, update, cursor
-        sentence = s
+        sentence = s.replace("\n", " ").replace("\r", " ")
         words = find_all_words(sentence)
         update = True
         cursor = 0
@@ -92,7 +93,7 @@ def main(stdscr: curses.window):
                     defs = w[1]
                     for d in defs:
 
-                        results.append((line, d.simplified))
+                        results.append((line, d.traditional if ADD_TRADITIONAL_CHARACTERS else d.simplified))
 
                         colors = []
                         pinyins = d.pinyin.split(" ")
@@ -198,8 +199,8 @@ def main(stdscr: curses.window):
                             'options': {}, 'tags': []})
                 anki('guiBrowse', query=query)
             except Exception as e:
-                y,_ = stdscr.getmaxyx()
-                stdscr.addstr(y-1,0,"Anki Error: " + str(e))
+                y, _ = stdscr.getmaxyx()
+                stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
 
 
 curses.wrapper(main)
