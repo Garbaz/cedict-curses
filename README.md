@@ -28,13 +28,14 @@ python3 -m pip install cedict_utils dragonmapper pyperclip
 
 ## Usage
 
-Before starting, you'll have to download and extract [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cedict) into the folder of this program.
-
 ```sh
 python3 cedict-curses.py [SENTENCE]
 
     SENTENCE - The initial sentence to load. Can be omitted.
 ```
+
+Before starting, you'll have to download and extract [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cedict) into the folder of this program.
+
 
 Inside the program you can use the following keys:
 
@@ -47,7 +48,7 @@ Inside the program you can use the following keys:
 | DOWN | Select the next result |
 | UP | Select the previous result |
 | r | Toggle between pinyin and zhuyin |
-| a | Added selected result to / show in Anki |
+| a | Add selected result to / show in Anki |
 | f | Search selected result on [forvo.com](https://forvo.com/) |
 
 ## Anki
