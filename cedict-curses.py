@@ -9,6 +9,7 @@ import webbrowser
 from settings import *
 from anki import anki
 
+logfile = open("log.txt",'w')
 
 parser = CedictParser()
 
@@ -105,7 +106,7 @@ def main(stdscr: curses.window):
                                 colors.append(5)
 
                         pos = 0
-
+                        print(line,pos,file=logfile)
                         stdscr.addstr(line, pos, "　")
                         pos += 2
 
@@ -165,19 +166,25 @@ def main(stdscr: curses.window):
             return
         elif key == ord(" "):
             update_sentence(pyperclip.paste())
-        elif key == curses.KEY_LEFT:
+        elif key == curses.KEY_LEFT or key == ord("h"):
             if cursor > 0:
                 cursor -= 1
                 update = True
-        elif key == curses.KEY_RIGHT:
+        elif key == curses.KEY_RIGHT or key == ord("l"):
             if cursor < len(sentence) - 1:
                 cursor += 1
                 update = True
-        elif key == curses.KEY_UP:
+        elif key == curses.KEY_END:
+            cursor = len(sentence) - 1
+            update = True
+        elif key == curses.KEY_HOME:
+            cursor = 0
+            update = True
+        elif key == curses.KEY_UP or key == ord("k"):
             if result_selection > 0:
                 result_selection -= 1
                 # update = True
-        elif key == curses.KEY_DOWN:
+        elif key == curses.KEY_DOWN or key == ord("j"):
             if result_selection < len(results) - 1:
                 result_selection += 1
                 # update = True
@@ -204,7 +211,7 @@ def main(stdscr: curses.window):
             except Exception as e:
                 y, _ = stdscr.getmaxyx()
                 stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
-        elif key == ord("f"):
+        elif key == ord("f") or key == curses.KEY_F1:
             webbrowser.open_new(f"https://forvo.com/word/{results[result_selection][1]}/#zh")
 
 

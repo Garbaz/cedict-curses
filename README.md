@@ -39,23 +39,23 @@ Before starting, you'll have to download and extract [CC-CEDICT](https://www.mdb
 
 Inside the program you can use the following keys:
 
-| Key | Function |
-| --- | --- |
-| q | Quit the program |
-| SPACE | Load sentence from clipboard |
-| RIGHT | Move right in the sentence |
-| LEFT | Move left in the sentence |
-| DOWN | Select the next result |
-| UP | Select the previous result |
-| r | Toggle between Pinyin and Zhuyin |
-| a | Add selected result to / show in Anki |
-| f | Search selected result on [forvo.com](https://forvo.com/) |
+| Key   | Alt. Key | Function 
+| ----- | -------- | --- 
+| q     |          | Quit the program 
+| SPACE |          | Load sentence from clipboard 
+| RIGHT | l        | Move right in the sentence 
+| LEFT  | h        | Move left in the sentence 
+| DOWN  | j        | Select the next result 
+| UP    | k        | Select the previous result 
+| r     |          | Toggle between Pinyin and Zhuyin 
+| a     | ENTER    | Add selected result to / show in Anki 
+| f     | F1       | Search selected result on [forvo.com](https://forvo.com/) 
 
 ## Anki
 
 1. Install [Anki Connect](https://ankiweb.net/shared/info/2055492159) addon for Anki.
 2. In `settings.py`, set the `DECK`, `CARD_TYPE` and `WORD_FIELD` variables according to your Anki setup.
-3. Press the `a` key inside the program!
+3. Press the `a` (or `ENTER`) key inside the program!
 
 ## Settings
 
@@ -63,5 +63,5 @@ In the `settings.py` file are a few variables to set, see the corresponding comm
 
 ## TODO
 
-* Overflow handling. If there are too many results or the sentence is too long, curses simply crashes...
+* Overflow handling. If there are too many results or the sentence is too long, things go bad...
 * Comments, comments, comments
