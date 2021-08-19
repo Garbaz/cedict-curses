@@ -225,6 +225,8 @@ def main(stdscr: curses.window):
                 stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
         elif key == ord("f") or key == curses.KEY_F1:
             webbrowser.open_new(f"https://forvo.com/word/{results[result_selection][1]}/#zh")
+        elif key == ord("g") or key == curses.KEY_F2:
+            webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[result_selection][1]}")
 
 
 curses.wrapper(main)

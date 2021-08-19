@@ -50,6 +50,7 @@ Inside the program you can use the following keys:
 | r     |          | Toggle between Pinyin and Zhuyin 
 | a     | ENTER    | Add selected result to / show in Anki 
 | f     | F1       | Search selected result on [forvo.com](https://forvo.com/) 
+| g     | F2       | Search selected result on the [Chinese Grammar Wiki](https://resources.allsetlearning.com/chinese/grammar/Main_Page)
 
 ## Anki
 
