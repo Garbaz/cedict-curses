@@ -5,11 +5,12 @@ from dragonmapper import transcriptions
 import curses
 import pyperclip
 import webbrowser
+import unicodedata
 
 from settings import *
 from anki import anki
 
-logfile = open("log.txt",'w')
+logfile = open("cedict-curses-log.txt", 'a')
 
 parser = CedictParser()
 
@@ -67,7 +68,8 @@ def main(stdscr: curses.window):
 
     def update_sentence(s):
         nonlocal sentence, words, update, cursor
-        sentence = s.replace("\n", " ").replace("\r", " ")
+        # sentence = s.replace("\n", " ").replace("\r", " ")
+        sentence = "".join(s.split())
         words = find_all_words(sentence)
         update = True
         cursor = 0
@@ -86,7 +88,18 @@ def main(stdscr: curses.window):
             results = []
 
             stdscr.addstr(0, 0, sentence)
-            stdscr.addstr(1, 0, ("　" * (cursor))+"￣＼")
+            cursor_line = ""
+            for i in range(cursor):
+                if unicodedata.east_asian_width(sentence[i]) == "W":
+                    cursor_line += "　"
+                else:
+                    cursor_line += " "
+            if unicodedata.east_asian_width(sentence[cursor]) == "W":
+                cursor_line += "￣＼"
+            else:
+                cursor_line += "‾\\"
+            # stdscr.addstr(1, 0, ("　" * (cursor))+"￣＼")
+            stdscr.addstr(1, 0, cursor_line)
 
             line = 3
 
@@ -106,7 +119,6 @@ def main(stdscr: curses.window):
                                 colors.append(5)
 
                         pos = 0
-                        print(line,pos,file=logfile)
                         stdscr.addstr(line, pos, "　")
                         pos += 2
 
@@ -133,7 +145,7 @@ def main(stdscr: curses.window):
                                 stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
                                 pos += len(z)
                                 if z[-1] in "ˉˇˋˊ˙":
-                                    pos+=1
+                                    pos += 1
                                 stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
                                 pos += 2
                             else:
@@ -215,5 +227,5 @@ def main(stdscr: curses.window):
             webbrowser.open_new(f"https://forvo.com/word/{results[result_selection][1]}/#zh")
 
 
-
 curses.wrapper(main)
+logfile.close()
