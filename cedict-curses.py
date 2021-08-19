@@ -227,8 +227,8 @@ def main(stdscr: curses.window):
             webbrowser.open_new(f"https://forvo.com/word/{results[result_selection][1]}/#zh")
         elif key == ord("g") or key == curses.KEY_F2:
             webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[result_selection][1]}")
-        else:
-            print(key,file=logfile)
+        # else:
+        #     print(key,file=logfile)
 
 
 curses.wrapper(main)
