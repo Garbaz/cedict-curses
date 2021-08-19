@@ -10,7 +10,7 @@ import unicodedata
 from settings import *
 from anki import anki
 
-logfile = open("cedict-curses-log.txt", 'a')
+logfile = open("cedict-curses.log", 'a')
 
 parser = CedictParser()
 
@@ -174,7 +174,7 @@ def main(stdscr: curses.window):
 
         stdscr.refresh()
         key = stdscr.getch()
-        if key == ord("q"):
+        if key == ord("q") or key == 27:
             return
         elif key == ord(" "):
             update_sentence(pyperclip.paste())
@@ -227,6 +227,8 @@ def main(stdscr: curses.window):
             webbrowser.open_new(f"https://forvo.com/word/{results[result_selection][1]}/#zh")
         elif key == ord("g") or key == curses.KEY_F2:
             webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[result_selection][1]}")
+        else:
+            print(key,file=logfile)
 
 
 curses.wrapper(main)

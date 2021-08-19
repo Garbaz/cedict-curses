@@ -41,7 +41,7 @@ Inside the program you can use the following keys:
 
 | Key   | Alt. Key | Function 
 | ----- | -------- | --- 
-| q     |          | Quit the program 
+| q     | ESCAPE   | Quit the program 
 | SPACE |          | Load sentence from clipboard 
 | RIGHT | l        | Move right in the sentence 
 | LEFT  | h        | Move left in the sentence 
