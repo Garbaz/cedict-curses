@@ -90,11 +90,11 @@ def main(stdscr: curses.window):
             stdscr.addstr(0, 0, sentence)
             cursor_line = ""
             for i in range(cursor):
-                if unicodedata.east_asian_width(sentence[i]) == "W":
+                if unicodedata.east_asian_width(sentence[i]) in {"W", "F"}:
                     cursor_line += "　"
                 else:
                     cursor_line += " "
-            if unicodedata.east_asian_width(sentence[cursor]) == "W":
+            if unicodedata.east_asian_width(sentence[cursor]) in {"W", "F"}:
                 cursor_line += "￣＼"
             else:
                 cursor_line += "‾\\"
@@ -150,7 +150,7 @@ def main(stdscr: curses.window):
                                 pos += 2
                             else:
                                 try:
-                                    p = transcriptions.ipa_to_pinyin(transcriptions.pinyin_to_ipa(pinyins[i]))
+                                    p = transcriptions.to_pinyin(pinyins[i], accented=True)
                                 except ValueError:
                                     p = pinyins[i]
                                 stdscr.addstr(line, pos, p, curses.color_pair(colors[i]))
@@ -228,7 +228,7 @@ def main(stdscr: curses.window):
         elif key == ord("g") or key == curses.KEY_F2:
             webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[result_selection][1]}")
         # else:
-        #     print(key,file=logfile)
+        #     print(key,"|",curses.keyname(key),file=logfile)
 
 
 curses.wrapper(main)
