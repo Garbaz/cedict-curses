@@ -12,6 +12,20 @@ from anki import anki
 
 logfile = open("cedict-curses.log", 'a')
 
+alternate_searches = {
+    "0": "零", "０": "零",
+    "1": "一", "１": "一",
+    "2": "二", "２": "二",
+    "3": "三", "３": "三",
+    "4": "四", "４": "四",
+    "5": "五", "５": "五",
+    "6": "六", "６": "六",
+    "7": "七", "７": "七",
+    "8": "八", "８": "八",
+    "9": "九", "９": "九"
+}
+
+
 parser = CedictParser()
 
 try:
@@ -40,6 +54,11 @@ def find_all_words(s):
             l = dictionary.get(word)
             if l is not None:
                 ret[i].append((word, l))
+            alt_word = "".join(map(lambda c: alternate_searches.get(c,c),word))
+            if alt_word != word:
+                al = dictionary.get(alt_word)
+                if al is not None:
+                    ret[i].append((alt_word, al))
     return ret
 
 
