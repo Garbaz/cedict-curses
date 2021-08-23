@@ -252,9 +252,8 @@ def main(stdscr: curses.window):
         elif key == 'm' or key == 'KEY_F(3)':
             if selection < len(results):
                 webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={results[selection][1]}")
-
-        else:
-            print(key,file=logfile)
+        # else:
+        #     print(key,file=logfile)
 
 
 curses.wrapper(main)
