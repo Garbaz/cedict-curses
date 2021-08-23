@@ -76,7 +76,7 @@ def main(stdscr: curses.window):
 
     stdscr.clear()
 
-    sentence = " "
+    sentence = ""
     words = [[]]
     cursor = 0
     update = True
@@ -107,18 +107,19 @@ def main(stdscr: curses.window):
             results = []
 
             stdscr.addstr(0, 0, sentence)
-            cursor_line = ""
-            for i in range(cursor):
-                if unicodedata.east_asian_width(sentence[i]) in {"W", "F"}:
-                    cursor_line += "　"
+            if sentence != "":
+                cursor_line = ""
+                for i in range(cursor):
+                    if unicodedata.east_asian_width(sentence[i]) in {"W", "F"}:
+                        cursor_line += "　"
+                    else:
+                        cursor_line += " "
+                if unicodedata.east_asian_width(sentence[cursor]) in {"W", "F"}:
+                    cursor_line += "￣＼"
                 else:
-                    cursor_line += " "
-            if unicodedata.east_asian_width(sentence[cursor]) in {"W", "F"}:
-                cursor_line += "￣＼"
-            else:
-                cursor_line += "‾\\"
-            # stdscr.addstr(1, 0, ("　" * (cursor))+"￣＼")
-            stdscr.addstr(1, 0, cursor_line)
+                    cursor_line += "‾\\"
+                # stdscr.addstr(1, 0, ("　" * (cursor))+"￣＼")
+                stdscr.addstr(1, 0, cursor_line)
 
             line = 3
 
@@ -192,37 +193,37 @@ def main(stdscr: curses.window):
             stdscr.addstr(results[selection][0], 0, "＞")
 
         stdscr.refresh()
-        key = stdscr.getch()
-        if key == ord("q") or key == 27:
+        key = curses.keyname(stdscr.getch()).decode('utf-8')
+        if key == 'q' or key == '^[':
             return
-        elif key == ord(" "):
+        elif key == ' ':
             update_sentence(pyperclip.paste())
-        elif key == curses.KEY_LEFT or key == ord("h"):
+        elif key == 'KEY_LEFT' or key == 'h':
             if cursor > 0:
                 cursor -= 1
                 update = True
-        elif key == curses.KEY_RIGHT or key == ord("l"):
+        elif key == 'KEY_RIGHT' or key == 'l':
             if cursor < len(sentence) - 1:
                 cursor += 1
                 update = True
-        elif key == curses.KEY_END:
-            cursor = len(sentence) - 1
-            update = True
-        elif key == curses.KEY_HOME:
-            cursor = 0
-            update = True
-        elif key == curses.KEY_UP or key == ord("k"):
+        elif key == 'KEY_UP' or key == 'k':
             if selection > 0:
                 selection -= 1
                 # update = True
-        elif key == curses.KEY_DOWN or key == ord("j"):
+        elif key == 'KEY_DOWN' or key == 'j':
             if selection < len(results) - 1:
                 selection += 1
                 # update = True
-        elif key == ord("r"):
+        elif key == 'KEY_END':
+            cursor = len(sentence) - 1
+            update = True
+        elif key == 'KEY_HOME':
+            cursor = 0
+            update = True
+        elif key == 'r':
             show_zhuyin = not show_zhuyin
             update = True
-        elif key == ord("a") or key == ord("\n"):
+        elif key == 'a' or key == '^J':
             try:
                 word = results[selection][1]
                 query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
@@ -242,15 +243,18 @@ def main(stdscr: curses.window):
             except Exception as e:
                 y, _ = stdscr.getmaxyx()
                 stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
-        elif key == ord("f") or key == curses.KEY_F1:
-            webbrowser.open_new(f"https://forvo.com/word/{results[selection][1]}/#zh")
-        elif key == ord("g") or key == curses.KEY_F2:
-            webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[selection][1]}")
-        elif key == ord("m") or key == curses.KEY_F3:
-            webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={results[selection][1]}")
+        elif key == 'f' or key == 'KEY_F(1)':
+            if selection < len(results):
+                webbrowser.open_new(f"https://forvo.com/word/{results[selection][1]}/#zh")
+        elif key == 'g' or key == 'KEY_F(2)':
+            if selection < len(results):
+                webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[selection][1]}")
+        elif key == 'm' or key == 'KEY_F(3)':
+            if selection < len(results):
+                webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={results[selection][1]}")
 
-        # else:
-        #     print(key,"|",curses.keyname(key),file=logfile)
+        else:
+            print(key,file=logfile)
 
 
 curses.wrapper(main)
