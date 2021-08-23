@@ -81,7 +81,7 @@ def main(stdscr: curses.window):
     cursor = 0
     update = True
     results = []
-    result_selection = 0
+    selection = 0
 
     show_zhuyin = DEFAULT_READING_ZHUYIN
 
@@ -103,7 +103,7 @@ def main(stdscr: curses.window):
             update = False
             stdscr.clear()
 
-            result_selection = 0
+            selection = 0
             results = []
 
             stdscr.addstr(0, 0, sentence)
@@ -155,12 +155,12 @@ def main(stdscr: curses.window):
                         pos += 1
 
                         for i in range(len(pinyins)):
-
+                            py = pinyins[i].replace(":","")
                             if show_zhuyin:
                                 try:
-                                    z = transcriptions.pinyin_to_zhuyin(pinyins[i])
+                                    z = transcriptions.pinyin_to_zhuyin(py)
                                 except ValueError:
-                                    z = pinyins[i]
+                                    z = py
                                 stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
                                 pos += len(z)
                                 if z[-1] in "ˉˇˋˊ˙":
@@ -169,11 +169,11 @@ def main(stdscr: curses.window):
                                 pos += 2
                             else:
                                 try:
-                                    p = transcriptions.to_pinyin(pinyins[i], accented=True)
+                                    p = transcriptions.to_pinyin(py, accented=True)
                                 except ValueError:
-                                    p = pinyins[i]
+                                    p = py
                                 stdscr.addstr(line, pos, p, curses.color_pair(colors[i]))
-                                pos += len(pinyins[i])
+                                pos += len(py)
                         pos -= 1
 
                         stdscr.addstr(line, pos, "）：")
@@ -188,8 +188,8 @@ def main(stdscr: curses.window):
 
         for r in results:
             stdscr.addstr(r[0], 0, "　")
-        if result_selection < len(results):
-            stdscr.addstr(results[result_selection][0], 0, "＞")
+        if selection < len(results):
+            stdscr.addstr(results[selection][0], 0, "＞")
 
         stdscr.refresh()
         key = stdscr.getch()
@@ -212,19 +212,19 @@ def main(stdscr: curses.window):
             cursor = 0
             update = True
         elif key == curses.KEY_UP or key == ord("k"):
-            if result_selection > 0:
-                result_selection -= 1
+            if selection > 0:
+                selection -= 1
                 # update = True
         elif key == curses.KEY_DOWN or key == ord("j"):
-            if result_selection < len(results) - 1:
-                result_selection += 1
+            if selection < len(results) - 1:
+                selection += 1
                 # update = True
         elif key == ord("r"):
             show_zhuyin = not show_zhuyin
             update = True
         elif key == ord("a") or key == ord("\n"):
             try:
-                word = results[result_selection][1]
+                word = results[selection][1]
                 query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
                 notes = anki('findNotes', query=query)
                 # stdscr.addstr(30,0,str(notes))
@@ -243,9 +243,12 @@ def main(stdscr: curses.window):
                 y, _ = stdscr.getmaxyx()
                 stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
         elif key == ord("f") or key == curses.KEY_F1:
-            webbrowser.open_new(f"https://forvo.com/word/{results[result_selection][1]}/#zh")
+            webbrowser.open_new(f"https://forvo.com/word/{results[selection][1]}/#zh")
         elif key == ord("g") or key == curses.KEY_F2:
-            webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[result_selection][1]}")
+            webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[selection][1]}")
+        elif key == ord("m") or key == curses.KEY_F3:
+            webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={results[selection][1]}")
+
         # else:
         #     print(key,"|",curses.keyname(key),file=logfile)
 

@@ -9,6 +9,7 @@ Interactively analysing a Chinese sentence and look up words in the CC-CEDCIT di
 * Read sentence from clipboard or command-line argument
 * Show Pinyin or [Zhuyin](https://en.wikipedia.org/wiki/Bopomofo) with tone colours for readings
 * Add words to [Anki](https://apps.ankiweb.net/) (using [Anki Connect](https://foosoft.net/projects/anki-connect/))
+* Search/Open selected word in certain websites
   
 ## Requirements
 
@@ -51,6 +52,7 @@ Inside the program you can use the following keys:
 | a     | ENTER    | Add selected result to / show in Anki 
 | f     | F1       | Search selected result on [forvo.com](https://forvo.com/) 
 | g     | F2       | Search selected result on the [Chinese Grammar Wiki](https://resources.allsetlearning.com/chinese/grammar/Main_Page)
+| m     | F3       | Search selected result on [MDBG](https://www.mdbg.net/chinese/dictionary)
 
 ## Anki
 
