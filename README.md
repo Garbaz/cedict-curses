@@ -13,19 +13,11 @@ Interactive analzing of a Chinese sentence and looking up words in the CC-CEDCIT
   
 ## __Requirements__
 
-* `curses`
-* `cedict_utils`
-* `dragonmapper`
-* `pyperclip`
-* `webbrowser`
-
-The following command should do the trick:
-
 ```sh
 python3 -m pip install cedict_utils dragonmapper pyperclip
 ```
 
-(`curses` and `webbroser` should already be included with the python standard library)
+(All other libraries should already be included with the python standard library)
 
 ## __Usage__
 
