@@ -1,11 +1,16 @@
 import curses
+from logging import error
 from sys import stderr, argv
-from cedict_utils.cedict import CedictParser
+from cedict_utils import cedict
 from dragonmapper import transcriptions
 import curses
 import pyperclip
 import webbrowser
 import unicodedata
+import os
+import gzip
+import zipfile
+import shutil
 
 from settings import *
 from anki import anki
@@ -26,18 +31,47 @@ alternate_searches = {
 }
 
 
-parser = CedictParser()
-
-try:
-    parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
-except FileNotFoundError:
-    print("Could not find dictionary file 'cedict_1_0_ts_utf-8_mdbg.txt'! Please download CC-CEDICT from", file=stderr)
+def error_failed_to_read_dict():
+    print("Could not find dictionary file 'cedict_1_0_ts_utf-8_mdbg.txt'. Please download CC-CEDICT from", file=stderr)
     print("https://www.mdbg.net/chinese/dictionary?page=cedict", file=stderr)
     print("and extract it in this folder.", file=stderr)
     exit(1)
 
+
+parser = cedict.CedictParser()
+
+# Try to load dictionary file.
+# If the file isn't found, try to find other forms of the file and extract/rename.
+try:
+    parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
+except FileNotFoundError:
+    try:
+        os.rename("cedict_ts.u8", "cedict_1_0_ts_utf-8_mdbg.txt")
+        print("Found 'cedict_ts.u8', renaming to 'cedict_1_0_ts_utf-8_mdbg.txt'.")
+    except FileNotFoundError:
+        try:
+            with zipfile.ZipFile("cedict_1_0_ts_utf-8_mdbg.zip") as z:
+                print("Found 'cedict_1_0_ts_utf-8_mdbg.zip', extracting...")
+                z.extractall()
+            os.rename("cedict_ts.u8", "cedict_1_0_ts_utf-8_mdbg.txt")
+        except FileNotFoundError:
+            try:
+                with gzip.open("cedict_1_0_ts_utf-8_mdbg.txt.gz", 'rb') as g:
+                    print("Found 'cedict_1_0_ts_utf-8_mdbg.txt.gz', extracting...")
+                    with open("cedict_1_0_ts_utf-8_mdbg.txt", 'xb') as f:
+                        shutil.copyfileobj(g, f)
+            except FileNotFoundError:
+                error_failed_to_read_dict()
+
+try:
+    parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
+except FileNotFoundError:
+    error_failed_to_read_dict()
+
 entries = parser.parse()
 
+# Make a python dict out of the parsed CEDICT dictionary.
+# Keys are the simplified/traditional word, and the values are a list of the corresponding `cedict.CedictEntry`'s.
 dictionary = {}
 for e in entries:
     dictionary[e.simplified] = dictionary.get(e.simplified, []) + [e]
@@ -46,6 +80,19 @@ for e in entries:
 
 
 def find_all_words(s):
+    """
+    Finds all words in a given sentence which have an entry in the dictionary. Return format:
+    ```
+    # For input "ABCD"
+    [
+        [("ABC",...), ("AB",...), ("A",...)], # Words starting from the first characters
+        [("BC",...), ("BC",...), ("B",...)],  # Words starting from the second character
+        [("C",...)]                           # ...
+    ]
+    ```
+    Each `...` is a `cedict.CedictEntry` corresponding to the word.
+    """
+
     ret = []
     for i in range(len(s)):
         ret.append([])
@@ -54,7 +101,7 @@ def find_all_words(s):
             l = dictionary.get(word)
             if l is not None:
                 ret[i].append((word, l))
-            alt_word = "".join(map(lambda c: alternate_searches.get(c,c),word))
+            alt_word = "".join(map(lambda c: alternate_searches.get(c, c), word))
             if alt_word != word:
                 al = dictionary.get(alt_word)
                 if al is not None:
@@ -62,8 +109,9 @@ def find_all_words(s):
     return ret
 
 
-def main(stdscr: curses.window):
+def main(stdscr):
     # curses.mousemask(1)
+
     curses.curs_set(0)
     curses.start_color()
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -106,6 +154,8 @@ def main(stdscr: curses.window):
             selection = 0
             results = []
 
+            #### Render sentence and cursor ####
+
             stdscr.addstr(0, 0, sentence)
             if sentence != "":
                 cursor_line = ""
@@ -121,15 +171,19 @@ def main(stdscr: curses.window):
                 # stdscr.addstr(1, 0, ("　" * (cursor))+"￣＼")
                 stdscr.addstr(1, 0, cursor_line)
 
+            
+            #### Render results ####
+
             line = 3
 
             if cursor < len(words):
                 for w in words[cursor]:
                     defs = w[1]
                     for d in defs:
-
+                        
                         results.append((line, d.simplified, d.traditional))
 
+                        ## Parse pinyin for colours ##
                         colors = []
                         pinyins = d.pinyin.split(" ")
                         for p in pinyins:
@@ -142,12 +196,15 @@ def main(stdscr: curses.window):
                         stdscr.addstr(line, pos, "　")
                         pos += 2
 
+                        ## Word (Simplified) ##
                         for i in range(len(d.simplified)):
                             stdscr.addstr(line, pos, d.simplified[i], curses.color_pair(colors[i]))
                             pos += 1
 
                         stdscr.addstr(line, pos, "｜")
                         pos += 1
+
+                        ## Word (Traditional) ##
                         for i in range(len(d.traditional)):
                             stdscr.addstr(line, pos, d.traditional[i], curses.color_pair(colors[i]))
                             pos += 1
@@ -155,8 +212,9 @@ def main(stdscr: curses.window):
                         stdscr.addstr(line, pos, "（")
                         pos += 1
 
+                        ## Pinyin/Zhuyin ##
                         for i in range(len(pinyins)):
-                            py = pinyins[i].replace(":","")
+                            py = pinyins[i].replace(":", "") # Some CEDICT entrys contain ':' in the pinyin, the converter doesn't like that
                             if show_zhuyin:
                                 try:
                                     z = transcriptions.pinyin_to_zhuyin(py)
@@ -164,6 +222,9 @@ def main(stdscr: curses.window):
                                     z = py
                                 stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
                                 pos += len(z)
+
+                                # Hacky shifting around of pos so we don't get overwritten characters or unwanted spaces
+                                # Mixing fullwidth and halfwidth characters in curses is a pain...
                                 if z[-1] in "ˉˇˋˊ˙":
                                     pos += 1
                                 stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
@@ -195,9 +256,9 @@ def main(stdscr: curses.window):
         stdscr.refresh()
         key = curses.keyname(stdscr.getch()).decode('utf-8')
 
-        print(f"Key pressed: '{key}'",file=logfile)
+        print(f"Key pressed: '{key}'", file=logfile)
 
-        if key == 'q' or key == '^[':
+        if key == 'q' or key == '^[': # '^[' is ESC
             return
         elif key == ' ':
             update_sentence(pyperclip.paste())
@@ -226,7 +287,7 @@ def main(stdscr: curses.window):
         elif key == 'r':
             show_zhuyin = not show_zhuyin
             update = True
-        elif key == 'a' or key == '^J':
+        elif key == 'a' or key == '^J': # '^J' is ENTER
             try:
                 word = results[selection][2] if ADD_TRADITIONAL_CHARACTERS else results[selection][1]
                 query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
@@ -264,7 +325,6 @@ def main(stdscr: curses.window):
                     webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={word_simp}")
                 elif key == 't' or key == 'KEY_F(6)':
                     webbrowser.open_new(f"https://www.moedict.tw/~{word_trad}")
-                    
 
 
 curses.wrapper(main)
