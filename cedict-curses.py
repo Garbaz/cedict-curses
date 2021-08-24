@@ -10,7 +10,7 @@ import unicodedata
 from settings import *
 from anki import anki
 
-logfile = open("cedict-curses.log", 'a')
+logfile = open("cedict-curses.log", 'w')
 
 alternate_searches = {
     "0": "零", "０": "零",
@@ -128,7 +128,7 @@ def main(stdscr: curses.window):
                     defs = w[1]
                     for d in defs:
 
-                        results.append((line, d.traditional if ADD_TRADITIONAL_CHARACTERS else d.simplified))
+                        results.append((line, d.simplified, d.traditional))
 
                         colors = []
                         pinyins = d.pinyin.split(" ")
@@ -194,6 +194,9 @@ def main(stdscr: curses.window):
 
         stdscr.refresh()
         key = curses.keyname(stdscr.getch()).decode('utf-8')
+
+        print(key,file=logfile)
+
         if key == 'q' or key == '^[':
             return
         elif key == ' ':
@@ -225,7 +228,7 @@ def main(stdscr: curses.window):
             update = True
         elif key == 'a' or key == '^J':
             try:
-                word = results[selection][1]
+                word = results[selection][2] if ADD_TRADITIONAL_CHARACTERS else results[selection][1]
                 query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
                 notes = anki('findNotes', query=query)
                 # stdscr.addstr(30,0,str(notes))
@@ -243,17 +246,25 @@ def main(stdscr: curses.window):
             except Exception as e:
                 y, _ = stdscr.getmaxyx()
                 stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
-        elif key == 'f' or key == 'KEY_F(1)':
+        else:
             if selection < len(results):
-                webbrowser.open_new(f"https://forvo.com/word/{results[selection][1]}/#zh")
-        elif key == 'g' or key == 'KEY_F(2)':
-            if selection < len(results):
-                webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{results[selection][1]}")
-        elif key == 'm' or key == 'KEY_F(3)':
-            if selection < len(results):
-                webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={results[selection][1]}")
-        # else:
-        #     print(key,file=logfile)
+                word_simp = results[selection][1]
+                word_trad = results[selection][2]
+                if key == 'l' or key == 'KEY_F(1)':
+                    webbrowser.open_new(f"https://dict.naver.com/linedict/zhendict/dict.html#/cnen/search?query={word_simp}")
+                elif key == 'f' or key == 'KEY_F(2)':
+                    webbrowser.open_new(f"https://forvo.com/word/{word_simp}/#zh")
+                elif key == 'F' or key == 'KEY_F(14)':
+                    webbrowser.open_new(f"https://forvo.com/word/{word_trad}/#zh")
+                elif key == 'g' or key == 'KEY_F(3)':
+                    webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{word_simp}")
+                elif key == 'i' or key == 'KEY_F(4)':
+                    webbrowser.open_new(f"https://www.iciba.com/word?w={word_simp}")
+                elif key == 'm' or key == 'KEY_F(5)':
+                    webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={word_simp}")
+                elif key == 't' or key == 'KEY_F(6)':
+                    webbrowser.open_new(f"https://www.moedict.tw/~{word_trad}")
+                    
 
 
 curses.wrapper(main)

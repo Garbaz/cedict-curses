@@ -40,19 +40,23 @@ Before starting, you'll have to download and extract [CC-CEDICT](https://www.mdb
 
 Inside the program you can use the following keys:
 
-| Key   | Alt. Key | Function 
-| ----- | -------- | --- 
-| q     | ESCAPE   | Quit the program 
-| SPACE |          | Load sentence from clipboard 
-| RIGHT | l        | Move right in the sentence 
-| LEFT  | h        | Move left in the sentence 
-| DOWN  | j        | Select the next result 
-| UP    | k        | Select the previous result 
-| r     |          | Toggle between Pinyin and Zhuyin 
-| a     | ENTER    | Add selected result to / show in Anki 
-| f     | F1       | Search selected result on [forvo.com](https://forvo.com/) 
-| g     | F2       | Search selected result on the [Chinese Grammar Wiki](https://resources.allsetlearning.com/chinese/grammar/Main_Page)
-| m     | F3       | Search selected result on [MDBG](https://www.mdbg.net/chinese/dictionary)
+| Key       | Alt. Key   | Function 
+| --------- | ---------- | --- 
+| q         | ESCAPE     | Quit the program 
+| SPACE     |            | Load sentence from clipboard 
+| RIGHT     | l          | Move right in the sentence 
+| LEFT      | h          | Move left in the sentence 
+| DOWN      | j          | Select the next result 
+| UP        | k          | Select the previous result 
+| r         |            | Toggle between Pinyin and Zhuyin 
+| a         | ENTER      | Add selected result to / show in Anki
+| l         | F1         | Search selected result on [LINE Dict](https://dict.naver.com/linedict/zhendict/dict.html#/cnen/home)
+| f         | F2         | Search selected result on [Forvo](https://forvo.com) (Simplified)
+| Shift + f | SHIFT + F2 | Search selected result on [Forvo](https://forvo.com) (Traditional)
+| g         | F3         | Search selected result on the [Chinese Grammar Wiki](https://resources.allsetlearning.com/chinese/grammar/Main_Page)
+| i         | F4         | Search selected result on [iCIBA](https://www.iciba.com)
+| m         | F5         | Search selected result on [MDBG](https://www.mdbg.net/chinese/dictionary)
+| t         | F6         | Search selected result on [Moedict (萌典)](https://moedict.tw)
 
 ## Anki
 
