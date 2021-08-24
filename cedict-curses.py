@@ -195,7 +195,7 @@ def main(stdscr: curses.window):
         stdscr.refresh()
         key = curses.keyname(stdscr.getch()).decode('utf-8')
 
-        print(key,file=logfile)
+        print(f"Key pressed: '{key}'",file=logfile)
 
         if key == 'q' or key == '^[':
             return
