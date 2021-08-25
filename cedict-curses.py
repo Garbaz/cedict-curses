@@ -162,12 +162,11 @@ def main(stdscr):
             # with full-width and half-width characters myself.
             sent_y, sent_x = 0, 0
             for c in sentence:
-                stdscr.addstr(sent_y,sent_x,c)
+                stdscr.addstr(sent_y, sent_x, c)
                 y, x = stdscr.getyx()
                 sent_x = x
                 if y != sent_y:
                     sent_y += 2
-
 
             #### Render cursor ####
             if sentence != "":
@@ -187,7 +186,7 @@ def main(stdscr):
                 # Same code as with sentence, just offset by one line
                 curs_y, curs_x = 1, 0
                 for c in cursor_line:
-                    stdscr.addstr(curs_y,curs_x,c)
+                    stdscr.addstr(curs_y, curs_x, c)
                     y, x = stdscr.getyx()
                     curs_x = x
                     if y != curs_y:
@@ -202,9 +201,14 @@ def main(stdscr):
             def addstr_at_line(x_offset, text, *args, **vargs):
                 nonlocal line
                 if line < max_y - 1:
+                    if x_offset == -1:
+                        _, x_offset = stdscr.getyx()
                     stdscr.addstr(line, x_offset, text, *args, **vargs)
                 else:
                     stdscr.addstr(max_y - 1, 0, "(( Too many results! Make window bigger ))")
+
+            def addstr_at_line_seq(text, *args, **vargs):
+                addstr_at_line(-1, text, *args, **vargs)
             # def addch_at_line()
 
             if cursor < len(words):
@@ -222,46 +226,30 @@ def main(stdscr):
                             else:
                                 colors.append(5)
 
-                        pos = 0
-                        addstr_at_line(pos, "　")
-                        pos += 2
+                        addstr_at_line(0, "　")
 
                         ## Word (Simplified) ##
                         for i in range(len(d.simplified)):
-                            addstr_at_line(pos, d.simplified[i], curses.color_pair(colors[i]))
-                            pos += 1
-
-                        addstr_at_line(pos, "｜")
-                        pos += 1
+                            addstr_at_line_seq(d.simplified[i], curses.color_pair(colors[i]))
+                        addstr_at_line_seq("｜")
 
                         ## Word (Traditional) ##
                         for i in range(len(d.traditional)):
-                            addstr_at_line(pos, d.traditional[i], curses.color_pair(colors[i]))
-                            pos += 1
+                            addstr_at_line_seq(d.traditional[i], curses.color_pair(colors[i]))
 
-                        
                         ## Pinyin/Zhuyin ##
-                        addstr_at_line(pos, "（")
-                        pos += 1
+                        addstr_at_line_seq("（")
                         for i in range(len(pinyins)):
-                            py = pinyins[i].replace(":", "")  # Some CEDICT entrys contain ':' in the pinyin, the converter doesn't like that
-                            if show_zhuyin:
-                                try:
-                                    z = transcriptions.pinyin_to_zhuyin(py)
-                                except ValueError:
-                                    z = py
-                                addstr_at_line(pos, z, curses.color_pair(colors[i]))
-                                _,pos = stdscr.getyx()
-                            else:
-                                try:
-                                    p = transcriptions.to_pinyin(py, accented=True)
-                                except ValueError:
-                                    p = py
-                                addstr_at_line(pos, p, curses.color_pair(colors[i]))
-                                pos += len(py)
-
-                        addstr_at_line(pos, "）：")
-                        pos += 2
+                            pinyin = pinyins[i].replace(":", "")  # Some CEDICT entrys contain ':' in the pinyin, the converter doesn't like that
+                            try:
+                                if show_zhuyin:
+                                    reading = transcriptions.to_zhuyin(pinyin)
+                                else:
+                                    reading = transcriptions.to_pinyin(pinyin, accented=True)
+                            except ValueError:
+                                reading = pinyin
+                            addstr_at_line_seq(reading, curses.color_pair(colors[i]))
+                        addstr_at_line_seq("）：")
 
                         line += 1
 
