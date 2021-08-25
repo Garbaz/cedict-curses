@@ -239,10 +239,10 @@ def main(stdscr):
                             addstr_at_line(pos, d.traditional[i], curses.color_pair(colors[i]))
                             pos += 1
 
+                        
+                        ## Pinyin/Zhuyin ##
                         addstr_at_line(pos, "（")
                         pos += 1
-
-                        ## Pinyin/Zhuyin ##
                         for i in range(len(pinyins)):
                             py = pinyins[i].replace(":", "")  # Some CEDICT entrys contain ':' in the pinyin, the converter doesn't like that
                             if show_zhuyin:
@@ -250,15 +250,8 @@ def main(stdscr):
                                     z = transcriptions.pinyin_to_zhuyin(py)
                                 except ValueError:
                                     z = py
-                                addstr_at_line(pos, z[:-1], curses.color_pair(colors[i]))
-                                pos += len(z)
-
-                                # Hacky shifting around of pos so we don't get overwritten characters or unwanted spaces
-                                # Mixing fullwidth and halfwidth characters in curses is a pain...
-                                # if z[-1] in "ˉˇˋˊ˙":
-                                #     pos += 1
-                                addstr_at_line(pos, z[-1], curses.color_pair(colors[i]))
-                                pos += 2
+                                addstr_at_line(pos, z, curses.color_pair(colors[i]))
+                                _,pos = stdscr.getyx()
                             else:
                                 try:
                                     p = transcriptions.to_pinyin(py, accented=True)
@@ -266,13 +259,13 @@ def main(stdscr):
                                     p = py
                                 addstr_at_line(pos, p, curses.color_pair(colors[i]))
                                 pos += len(py)
-                        pos -= 1
 
                         addstr_at_line(pos, "）：")
                         pos += 2
 
                         line += 1
 
+                        ## Meanings ##
                         for m in d.meanings:
                             addstr_at_line(4, m)
                             line += 1
