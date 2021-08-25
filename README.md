@@ -71,4 +71,4 @@ In the `settings.py` file are a few variables to set, see the corresponding comm
 
 ## __TODO__
 
-* Overflow handling; If there are too many results or the sentence is too long, things go bad...
+* Maybe a cleaner way to handle "too many results" (scrolling?)

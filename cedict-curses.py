@@ -1,5 +1,5 @@
 import curses
-from logging import error
+from logging import error, log
 from sys import stderr, argv
 from cedict_utils import cedict
 from dragonmapper import transcriptions
@@ -85,9 +85,10 @@ def find_all_words(s):
     ```
     # For input "ABCD"
     [
-        [("ABC",...), ("AB",...), ("A",...)], # Words starting from the first characters
+        [("ABC",...), ("AB",...), ("A",...)], # Words starting from the first character
         [("BC",...), ("BC",...), ("B",...)],  # Words starting from the second character
-        [("C",...)]                           # ...
+        [("C",...)],                          # ...
+        [("D",...)]
     ]
     ```
     Each `...` is a `cedict.CedictEntry` corresponding to the word.
@@ -154,9 +155,21 @@ def main(stdscr):
             selection = 0
             results = []
 
-            #### Render sentence and cursor ####
+            #### Render sentence ####
 
-            stdscr.addstr(0, 0, sentence)
+            # There might be a cleaner way, but this way I ensure the sentence
+            # is rendered on every second line, without having to manually deal
+            # with full-width and half-width characters myself.
+            sent_y, sent_x = 0, 0
+            for c in sentence:
+                stdscr.addstr(sent_y,sent_x,c)
+                y, x = stdscr.getyx()
+                sent_x = x
+                if y != sent_y:
+                    sent_y += 2
+
+
+            #### Render cursor ####
             if sentence != "":
                 cursor_line = ""
                 for i in range(cursor):
@@ -169,18 +182,35 @@ def main(stdscr):
                 else:
                     cursor_line += "‾\\"
                 # stdscr.addstr(1, 0, ("　" * (cursor))+"￣＼")
-                stdscr.addstr(1, 0, cursor_line)
+                # stdscr.addstr(1, 0, cursor_line)
 
-            
+                # Same code as with sentence, just offset by one line
+                curs_y, curs_x = 1, 0
+                for c in cursor_line:
+                    stdscr.addstr(curs_y,curs_x,c)
+                    y, x = stdscr.getyx()
+                    curs_x = x
+                    if y != curs_y:
+                        curs_y += 2
+
             #### Render results ####
 
-            line = 3
+            line = sent_y + 2
+
+            max_y, max_x = stdscr.getmaxyx()
+
+            def addstr_at_line(x_offset, text, *args, **vargs):
+                nonlocal line
+                if line < max_y - 1:
+                    stdscr.addstr(line, x_offset, text, *args, **vargs)
+                else:
+                    stdscr.addstr(max_y - 1, 0, "(( Too many results! Make window bigger ))")
+            # def addch_at_line()
 
             if cursor < len(words):
                 for w in words[cursor]:
                     defs = w[1]
                     for d in defs:
-                        
                         results.append((line, d.simplified, d.traditional))
 
                         ## Parse pinyin for colours ##
@@ -193,72 +223,74 @@ def main(stdscr):
                                 colors.append(5)
 
                         pos = 0
-                        stdscr.addstr(line, pos, "　")
+                        addstr_at_line(pos, "　")
                         pos += 2
 
                         ## Word (Simplified) ##
                         for i in range(len(d.simplified)):
-                            stdscr.addstr(line, pos, d.simplified[i], curses.color_pair(colors[i]))
+                            addstr_at_line(pos, d.simplified[i], curses.color_pair(colors[i]))
                             pos += 1
 
-                        stdscr.addstr(line, pos, "｜")
+                        addstr_at_line(pos, "｜")
                         pos += 1
 
                         ## Word (Traditional) ##
                         for i in range(len(d.traditional)):
-                            stdscr.addstr(line, pos, d.traditional[i], curses.color_pair(colors[i]))
+                            addstr_at_line(pos, d.traditional[i], curses.color_pair(colors[i]))
                             pos += 1
 
-                        stdscr.addstr(line, pos, "（")
+                        addstr_at_line(pos, "（")
                         pos += 1
 
                         ## Pinyin/Zhuyin ##
                         for i in range(len(pinyins)):
-                            py = pinyins[i].replace(":", "") # Some CEDICT entrys contain ':' in the pinyin, the converter doesn't like that
+                            py = pinyins[i].replace(":", "")  # Some CEDICT entrys contain ':' in the pinyin, the converter doesn't like that
                             if show_zhuyin:
                                 try:
                                     z = transcriptions.pinyin_to_zhuyin(py)
                                 except ValueError:
                                     z = py
-                                stdscr.addstr(line, pos, z[:-1], curses.color_pair(colors[i]))
+                                addstr_at_line(pos, z[:-1], curses.color_pair(colors[i]))
                                 pos += len(z)
 
                                 # Hacky shifting around of pos so we don't get overwritten characters or unwanted spaces
                                 # Mixing fullwidth and halfwidth characters in curses is a pain...
                                 if z[-1] in "ˉˇˋˊ˙":
                                     pos += 1
-                                stdscr.addch(line, pos, z[-1], curses.color_pair(colors[i]))
+                                addstr_at_line(pos, z[-1], curses.color_pair(colors[i]))
                                 pos += 2
                             else:
                                 try:
                                     p = transcriptions.to_pinyin(py, accented=True)
                                 except ValueError:
                                     p = py
-                                stdscr.addstr(line, pos, p, curses.color_pair(colors[i]))
+                                addstr_at_line(pos, p, curses.color_pair(colors[i]))
                                 pos += len(py)
                         pos -= 1
 
-                        stdscr.addstr(line, pos, "）：")
+                        addstr_at_line(pos, "）：")
                         pos += 2
 
                         line += 1
 
                         for m in d.meanings:
-                            stdscr.addstr(line, 4, m)
+                            addstr_at_line(4, m)
                             line += 1
                         line += 1
 
         for r in results:
-            stdscr.addstr(r[0], 0, "　")
+            if r[0] < max_y - 1:
+                stdscr.addstr(r[0], 0, "　")
         if selection < len(results):
-            stdscr.addstr(results[selection][0], 0, "＞")
+            if results[selection][0] < max_y - 1:
+                stdscr.addstr(results[selection][0], 0, "＞")
 
         stdscr.refresh()
         key = curses.keyname(stdscr.getch()).decode('utf-8')
 
-        print(f"Key pressed: '{key}'", file=logfile)
+        # print(f"Key pressed: '{key}'", file=logfile)
 
-        if key == 'q' or key == '^[': # '^[' is ESC
+        if key == 'q' or key == '^[':  # '^[' is ESC
             return
         elif key == ' ':
             update_sentence(pyperclip.paste())
@@ -287,7 +319,7 @@ def main(stdscr):
         elif key == 'r':
             show_zhuyin = not show_zhuyin
             update = True
-        elif key == 'a' or key == '^J': # '^J' is ENTER
+        elif key == 'a' or key == '^J':  # '^J' is ENTER
             try:
                 word = results[selection][2] if ADD_TRADITIONAL_CHARACTERS else results[selection][1]
                 query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
@@ -305,8 +337,7 @@ def main(stdscr):
                             'options': {}, 'tags': []})
                 anki('guiBrowse', query=query)
             except Exception as e:
-                y, _ = stdscr.getmaxyx()
-                stdscr.addstr(y-1, 0, "Anki Error: " + str(e))
+                stdscr.addstr(max_y-1, 0, f"(( Anki Error: {str(e)} ))")
         else:
             if selection < len(results):
                 word_simp = results[selection][1]
