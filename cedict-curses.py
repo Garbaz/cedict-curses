@@ -255,8 +255,8 @@ def main(stdscr):
 
                                 # Hacky shifting around of pos so we don't get overwritten characters or unwanted spaces
                                 # Mixing fullwidth and halfwidth characters in curses is a pain...
-                                if z[-1] in "ˉˇˋˊ˙":
-                                    pos += 1
+                                # if z[-1] in "ˉˇˋˊ˙":
+                                #     pos += 1
                                 addstr_at_line(pos, z[-1], curses.color_pair(colors[i]))
                                 pos += 2
                             else:
