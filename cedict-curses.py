@@ -1,5 +1,4 @@
 import curses
-from logging import error, log
 from sys import stderr, argv
 from cedict_utils import cedict
 from dragonmapper import transcriptions
@@ -269,11 +268,11 @@ def main(stdscr):
         stdscr.refresh()
         key = curses.keyname(stdscr.getch()).decode('utf-8')
 
-        # print(f"Key pressed: '{key}'", file=logfile)
+        print(f"Key pressed: '{key}'", file=logfile)
 
         if key == 'q' or key == '^[':  # '^[' is ESC
             return
-        elif key == ' ':
+        elif key == ' ' or key == 'M-c': # 'M-c' is for wide space (not accurate, but works)
             update_sentence(pyperclip.paste())
         elif key == 'KEY_LEFT' or key == 'h':
             if cursor > 0:
