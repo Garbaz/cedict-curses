@@ -268,34 +268,40 @@ def main(stdscr):
         stdscr.refresh()
         key = curses.keyname(stdscr.getch()).decode('utf-8')
 
-        print(f"Key pressed: '{key}'", file=logfile)
+        # print(f"Key pressed: '{key}'", file=logfile)
+
+        def move_cursor_clamp(new_cursor):
+            nonlocal cursor
+            old_cursor = cursor
+            cursor = new_cursor
+            if cursor < 0:
+                cursor = 0
+            elif cursor >= len(sentence):
+                cursor = len(sentence) - 1
+            return old_cursor != cursor
 
         if key == 'q' or key == '^[':  # '^[' is ESC
             return
-        elif key == ' ' or key == 'M-c': # 'M-c' is for wide space (not accurate, but works)
+        elif key == ' ' or key == 'M-c':  # 'M-c' is for wide space (not accurate, but works)
             update_sentence(pyperclip.paste())
         elif key == 'KEY_LEFT' or key == 'h':
-            if cursor > 0:
-                cursor -= 1
-                update = True
+            update |= move_cursor_clamp(cursor-1)
         elif key == 'KEY_RIGHT' or key == 'l':
-            if cursor < len(sentence) - 1:
-                cursor += 1
-                update = True
+            update |= move_cursor_clamp(cursor+1)
+        elif key == 'KEY_END':
+            update |= move_cursor_clamp(len(sentence) - 1)
+        elif key == 'KEY_HOME':
+            update |= move_cursor_clamp(0)
+        elif key == 'KEY_PPAGE':
+            update |= move_cursor_clamp(cursor-10)
+        elif key == 'KEY_NPAGE':
+            update |= move_cursor_clamp(cursor+10)
         elif key == 'KEY_UP' or key == 'k':
             if selection > 0:
                 selection -= 1
-                # update = True
         elif key == 'KEY_DOWN' or key == 'j':
             if selection < len(results) - 1:
                 selection += 1
-                # update = True
-        elif key == 'KEY_END':
-            cursor = len(sentence) - 1
-            update = True
-        elif key == 'KEY_HOME':
-            cursor = 0
-            update = True
         elif key == 'r':
             show_zhuyin = not show_zhuyin
             update = True
