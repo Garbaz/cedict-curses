@@ -239,7 +239,7 @@ def main(stdscr):
                         ## Pinyin/Zhuyin ##
                         addstr_at_line_seq("（")
                         for i in range(len(pinyins)):
-                            pinyin = pinyins[i].replace(":", "")  # Some CEDICT entrys contain ':' in the pinyin, the converter doesn't like that
+                            pinyin = pinyins[i].replace("u:", "ü")
                             try:
                                 if show_zhuyin:
                                     reading = transcriptions.to_zhuyin(pinyin)
