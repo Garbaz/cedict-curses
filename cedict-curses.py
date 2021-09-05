@@ -321,7 +321,7 @@ def main(stdscr):
                             'deckName': DECK,
                             'modelName': CARD_TYPE,
                             'fields': fields,
-                            'options': {}, 'tags': []})
+                            'options': {'duplicateScope': "deck"}, 'tags': []})
                 anki('guiBrowse', query=query)
             except Exception as e:
                 stdscr.addstr(max_y-1, 0, f"(( Anki Error: {str(e)} ))")
