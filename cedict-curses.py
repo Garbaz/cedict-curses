@@ -67,12 +67,13 @@ try:
 except FileNotFoundError:
     error_failed_to_read_dict()
 
-entries = parser.parse()
+parsed = parser.parse()
 
 # Make a python dict out of the parsed CEDICT dictionary.
 # Keys are the simplified/traditional word, and the values are a list of the corresponding `cedict.CedictEntry`'s.
 dictionary = {}
-for e in entries:
+for e in parsed:
+    e.pinyin.replace("u:", "ü")
     dictionary[e.simplified] = dictionary.get(e.simplified, []) + [e]
     if(e.traditional != e.simplified):
         dictionary[e.traditional] = dictionary.get(e.traditional, []) + [e]
@@ -98,9 +99,9 @@ def find_all_words(s):
         ret.append([])
         for j in range(len(s), i-1, -1):
             word = s[i:j]
-            l = dictionary.get(word)
-            if l is not None:
-                ret[i].append((word, l))
+            entries = dictionary.get(word)
+            if entries is not None:
+                ret[i].append((word, entries))
             alt_word = "".join(map(lambda c: alternate_searches.get(c, c), word))
             if alt_word != word:
                 al = dictionary.get(alt_word)
@@ -212,13 +213,13 @@ def main(stdscr):
 
             if cursor < len(words):
                 for w in words[cursor]:
-                    defs = w[1]
-                    for d in defs:
-                        results.append((line, d.simplified, d.traditional))
+                    entries = w[1]
+                    for e in entries:
+                        results.append((line, e))
 
                         ## Parse pinyin for colours ##
                         colors = []
-                        pinyins = d.pinyin.split(" ")
+                        pinyins = e.pinyin.split(" ")
                         for p in pinyins:
                             if p[-1] in "12345":
                                 colors.append(int(p[-1]))
@@ -228,18 +229,18 @@ def main(stdscr):
                         addstr_at_line(0, "　")
 
                         ## Word (Simplified) ##
-                        for i in range(len(d.simplified)):
-                            addstr_at_line_seq(d.simplified[i], curses.color_pair(colors[i]))
+                        for i in range(len(e.simplified)):
+                            addstr_at_line_seq(e.simplified[i], curses.color_pair(colors[i]))
                         addstr_at_line_seq("｜")
 
                         ## Word (Traditional) ##
-                        for i in range(len(d.traditional)):
-                            addstr_at_line_seq(d.traditional[i], curses.color_pair(colors[i]))
+                        for i in range(len(e.traditional)):
+                            addstr_at_line_seq(e.traditional[i], curses.color_pair(colors[i]))
 
                         ## Pinyin/Zhuyin ##
                         addstr_at_line_seq("（")
                         for i in range(len(pinyins)):
-                            pinyin = pinyins[i].replace("u:", "ü")
+                            pinyin = pinyins[i]
                             try:
                                 if show_zhuyin:
                                     reading = transcriptions.to_zhuyin(pinyin)
@@ -253,7 +254,7 @@ def main(stdscr):
                         line += 1
 
                         ## Meanings ##
-                        for m in d.meanings:
+                        for m in e.meanings:
                             addstr_at_line(4, m)
                             line += 1
                         line += 1
@@ -326,8 +327,8 @@ def main(stdscr):
                 stdscr.addstr(max_y-1, 0, f"(( Anki Error: {str(e)} ))")
         else:
             if selection < len(results):
-                word_simp = results[selection][1]
-                word_trad = results[selection][2]
+                word_simp = results[selection][1].simplified
+                word_trad = results[selection][1].traditional
                 if key == 'l' or key == 'KEY_F(1)':
                     webbrowser.open_new(f"https://dict.naver.com/linedict/zhendict/dict.html#/cnen/search?query={word_simp}")
                 elif key == 'f' or key == 'KEY_F(2)':
