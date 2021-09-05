@@ -308,7 +308,7 @@ def main(stdscr):
             update = True
         elif key == 'a' or key == '^J':  # '^J' is ENTER
             try:
-                word = results[selection][2] if ADD_TRADITIONAL_CHARACTERS else results[selection][1]
+                word = results[selection][1].traditional if ADD_TRADITIONAL_CHARACTERS else results[selection][1].simplified
                 query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
                 notes = anki('findNotes', query=query)
                 # stdscr.addstr(30,0,str(notes))
