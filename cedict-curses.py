@@ -37,12 +37,10 @@ def error_failed_to_read_dict():
     exit(1)
 
 
-parser = cedict.CedictParser()
-
 # Try to load dictionary file.
 # If the file isn't found, try to find other forms of the file and extract/rename.
 try:
-    parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
+    parser = cedict.CedictParser(file_path="cedict_1_0_ts_utf-8_mdbg.txt")
 except FileNotFoundError:
     try:
         os.rename("cedict_ts.u8", "cedict_1_0_ts_utf-8_mdbg.txt")
@@ -63,7 +61,7 @@ except FileNotFoundError:
                 error_failed_to_read_dict()
 
 try:
-    parser.read_file("cedict_1_0_ts_utf-8_mdbg.txt")
+    parser = cedict.CedictParser(file_path="cedict_1_0_ts_utf-8_mdbg.txt")
 except FileNotFoundError:
     error_failed_to_read_dict()
 
