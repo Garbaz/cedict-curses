@@ -34,7 +34,6 @@ FIELD_PINYIN = "Pinyin"
 FIELD_PINYIN_COLOR = ""
 FIELD_PINYIN_NUMBERS = "Pinyin (Numbers)"
 FIELD_ENGLISH = "English"
-FIELD_SOUND = ""
 
 """
 Whether or not to use traditional instead of simplified characters when adding a new card.

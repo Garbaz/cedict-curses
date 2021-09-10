@@ -14,11 +14,18 @@ Interactive analzing of a Chinese sentence and looking up words in the CC-CEDCIT
 ## __Requirements__
 
 ```sh
-# All other libraries should already be included with the python standard library.
 python3 -m pip install cedict_utils dragonmapper pyperclip
 ```
 
-You also have to download and extract the [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cedict) dictionary file into the folder of this program. You can at any time re-download and replace the file to update the dictionary.
+(All other libraries should already be included with the python standard library.)
+
+## __Setup__
+
+Download and extract the [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cedict) dictionary file into the folder of this program. You can at any time re-download and replace the file to update the dictionary.
+
+When starting the program for the first time, it will create a `settings.py` file and prompt you to edit it.
+
+If you want to use the Anki interface, make sure you have the [Anki Connect](https://ankiweb.net/shared/info/2055492159) addon installed in Anki and set the settings in `settings.py` according to your setup (deck, note type, field names). The default values are just what I use, so they won't work out out of the box.
 
 ## __Usage__
 
@@ -53,21 +60,7 @@ Inside the program you can use the following keys:
 * _The F1,F2,... keys are roughly based on the Alt+1,Alt+2,... keybinds of the [Zhongwen Browser Addon](https://github.com/cschiller/zhongwen#readme), so I don't confuse myself too much._
 * _Forvo differentiates between simplified and traditional versions of words, hence the two keybinds. Though note that you'll get a mix of Mainland and Taiwan (and other) pronounciations in either case..._
 
-## __Anki__
-
-### Setup
-
-1. Install [Anki Connect](https://ankiweb.net/shared/info/2055492159) addon for Anki.
-2. In `settings.py`, set the `DECK`, `CARD_TYPE` and `WORD_FIELD` variables according to your Anki setup.
-
-### Usage
-
-Press the `a` (or `ENTER`) key inside the program, the Anki word browser should open with the word selected. If something goes wrong, an Error should be shown at the bottom of the program.
-
-## __Settings__
-
-In the `settings.py` file are a few variables to set, see the corresponding comments for more info.
-
 ## __TODO__
 
 * Maybe a cleaner way to handle "too many results" (scrolling?)
+* Google Cloud TTS intergration?

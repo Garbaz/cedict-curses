@@ -17,7 +17,7 @@ except ModuleNotFoundError:
     shutil.copy(".default_settings.py","settings.py")
     print("Please open the file \'settings.py\' in a text editor and set the settings.",file=stderr)
     print("Afterwards, start the program again.")
-    input("\nPress ENTER to exit...")
+    input("\n(Press ENTER to exit...)")
     exit(1)
 
 from anki import anki
