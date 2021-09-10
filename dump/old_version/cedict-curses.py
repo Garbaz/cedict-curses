@@ -11,15 +11,7 @@ import gzip
 import zipfile
 import shutil
 
-try:
-    from settings import *
-except ModuleNotFoundError:
-    shutil.copy(".default_settings.py","settings.py")
-    print("Please open the file \'settings.py\' in a text editor and set the settings.",file=stderr)
-    print("Afterwards, start the program again.")
-    input("\nPress ENTER to exit...")
-    exit(1)
-
+from settings import *
 from anki import anki
 
 logfile = open("cedict-curses.log", 'w')
@@ -314,56 +306,21 @@ def main(stdscr):
             update = True
         elif key == 'a' or key == '^J':  # '^J' is ENTER
             try:
-                word : cedict.CedictEntry = results[selection][1]
-                pinyin_numbers = word.pinyin.replace(" ", "")
-                pinyin_accented = transcriptions.to_pinyin(word.pinyin,accented=True)
-                zhuyin = transcriptions.to_zhuyin(word.pinyin)
-
-                unique_str = f"{word.simplified}[{word.traditional}] {pinyin_numbers}"
-                query = f"deck:\"{DECK}\" {FIELD_UNIQUE}:\"{unique_str}\""
-                # filename = f"{word.simplified}_{word.traditional}_{''.join(word.pinyin.split())}.mp3"
-                
-                note_ids = anki('findNotes', query=query)
-
-                if len(note_ids) == 0:
-
-                    fields = {}
-
-                    def add_field(name, value):
-                        nonlocal fields
-                        if name != "":
-                            fields[name] = value
-
-                    colors = [(p[-1] if p[-1] in "12345" else "5") for p in word.pinyin.split(" ")]
-
-                    def colorize(array):
-                        return "".join([f"<span class=\"tone{c}\">{s}</span>" for c, s in zip(colors, array)])
-
-                    add_field(FIELD_UNIQUE, unique_str)
-                    add_field(FIELD_SIMPLIFIED, word.simplified)
-                    add_field(FIELD_SIMPLIFIED_COLOR, colorize(word.simplified))
-                    add_field(FIELD_TRADITIONAL, word.traditional)
-                    add_field(FIELD_TRADITIONAL_COLOR, colorize(word.traditional))
-                    add_field(FIELD_ZHUYIN, colorize(transcriptions.to_zhuyin(word.pinyin).split(" ")))
-                    add_field(FIELD_PINYIN, transcriptions.to_pinyin(word.pinyin))
-                    add_field(FIELD_PINYIN_COLOR, colorize(transcriptions.to_pinyin(word.pinyin, accented=True).split(" ")))
-                    add_field(FIELD_PINYIN_NUMBERS, word.pinyin.replace(" ",""))
-                    add_field(FIELD_ENGLISH, "<br>".join(word.meanings))
-
-                    # if len(anki('getMediaFilesNames', pattern=filename)) == 0:
-                    #     tts_str = getattr(word, TTS_SRC_STRING)
-                    #     tts = gTTS(tts_str, lang=TTS_LANGUAGE)
-                    #     with io.BytesIO() as f:
-                    #         tts.write_to_fp(f)
-                    #         audio_b64 = base64.b64encode(f.getvalue()).decode('utf-8')
-                    #         anki('storeMediaFile', filename=filename, data=audio_b64)
-                    # add_field(FIELD_SOUND, f"[sound:{filename}]")
-
-                    note = {'deckName': DECK, 'modelName': NOTE_TYPE, 'fields': fields, 'options': {'duplicateScope': "deck"}, 'tags': []}
-                    note_ids = [anki('addNote', note=note)]
-                anki('addTags', notes=note_ids, tags="marked")
-                anki('guiBrowse', query=f"deck:{DECK} {FIELD_UNIQUE}:\"{unique_str}\"")
-
+                word = results[selection][1].traditional if ADD_TRADITIONAL_CHARACTERS else results[selection][1].simplified
+                query = 'deck:"'+DECK+'" '+WORD_FIELD+':"'+word+'"'
+                notes = anki('findNotes', query=query)
+                # stdscr.addstr(30,0,str(notes))
+                if len(notes) == 0:
+                    field_names = anki('modelFieldNames', modelName=CARD_TYPE)
+                    if WORD_FIELD in field_names:
+                        fields = {f: "" for f in field_names}
+                        fields[WORD_FIELD] = word
+                        anki('addNote', note={
+                            'deckName': DECK,
+                            'modelName': CARD_TYPE,
+                            'fields': fields,
+                            'options': {'duplicateScope': "deck"}, 'tags': []})
+                anki('guiBrowse', query=query)
             except Exception as e:
                 stdscr.addstr(max_y-1, 0, f"(( Anki Error: {str(e)} ))")
         else:
