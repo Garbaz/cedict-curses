@@ -1,119 +1,27 @@
 import curses
-from sys import stderr, argv
-from cedict_utils import cedict
+from sys import argv
 from dragonmapper import transcriptions
 import curses
 import pyperclip
 import webbrowser
 import unicodedata
-import os
-import gzip
-import zipfile
 import shutil
-
-from anki import anki
 
 try:
     from settings import *
 except ModuleNotFoundError:
     shutil.copy(".default_settings.py", "settings.py")
-    print("Please open the file \'settings.py\' in a text editor and set the settings.", file=stderr)
+    print("Please open the file \'settings.py\' in a text editor and set the settings.")
     print("Afterwards, start the program again.")
     input("\n(Press ENTER to exit...)")
     exit(1)
 
+from anki import add_note
+from cedict import find_all_words
+
 logfile = open("cedict-curses.log", 'w')
 
-alternate_searches = {
-    "0": "零", "０": "零",
-    "1": "一", "１": "一",
-    "2": "二", "２": "二",
-    "3": "三", "３": "三",
-    "4": "四", "４": "四",
-    "5": "五", "５": "五",
-    "6": "六", "６": "六",
-    "7": "七", "７": "七",
-    "8": "八", "８": "八",
-    "9": "九", "９": "九"
-}
 
-
-def error_failed_to_read_dict():
-    print("Could not find dictionary file 'cedict_1_0_ts_utf-8_mdbg.txt'. Please download CC-CEDICT from", file=stderr)
-    print("https://www.mdbg.net/chinese/dictionary?page=cedict", file=stderr)
-    print("and extract it in this folder.", file=stderr)
-    exit(1)
-
-
-# Try to load dictionary file.
-# If the file isn't found, try to find other forms of the file and extract/rename.
-try:
-    parser = cedict.CedictParser(file_path="cedict_1_0_ts_utf-8_mdbg.txt")
-except FileNotFoundError:
-    try:
-        os.rename("cedict_ts.u8", "cedict_1_0_ts_utf-8_mdbg.txt")
-        print("Found 'cedict_ts.u8', renaming to 'cedict_1_0_ts_utf-8_mdbg.txt'.")
-    except FileNotFoundError:
-        try:
-            with zipfile.ZipFile("cedict_1_0_ts_utf-8_mdbg.zip") as z:
-                print("Found 'cedict_1_0_ts_utf-8_mdbg.zip', extracting...")
-                z.extractall()
-            os.rename("cedict_ts.u8", "cedict_1_0_ts_utf-8_mdbg.txt")
-        except FileNotFoundError:
-            try:
-                with gzip.open("cedict_1_0_ts_utf-8_mdbg.txt.gz", 'rb') as g:
-                    print("Found 'cedict_1_0_ts_utf-8_mdbg.txt.gz', extracting...")
-                    with open("cedict_1_0_ts_utf-8_mdbg.txt", 'xb') as f:
-                        shutil.copyfileobj(g, f)
-            except FileNotFoundError:
-                error_failed_to_read_dict()
-
-try:
-    parser = cedict.CedictParser(file_path="cedict_1_0_ts_utf-8_mdbg.txt")
-except FileNotFoundError:
-    error_failed_to_read_dict()
-
-parsed = parser.parse()
-
-# Make a python dict out of the parsed CEDICT dictionary.
-# Keys are the simplified/traditional word, and the values are a list of the corresponding `cedict.CedictEntry`'s.
-dictionary = {}
-for e in parsed:
-    e.pinyin.replace("u:", "ü")
-    dictionary[e.simplified] = dictionary.get(e.simplified, []) + [e]
-    if(e.traditional != e.simplified):
-        dictionary[e.traditional] = dictionary.get(e.traditional, []) + [e]
-
-
-def find_all_words(s):
-    """
-    Finds all words in a given sentence which have an entry in the dictionary. Return format:
-    ```
-    # For input "ABCD"
-    [
-        [("ABC",...), ("AB",...), ("A",...)], # Words starting from the first character
-        [("BC",...), ("BC",...), ("B",...)],  # Words starting from the second character
-        [("C",...)],                          # ...
-        [("D",...)]
-    ]
-    ```
-    Each `...` is a `cedict.CedictEntry` corresponding to the word.
-    """
-
-    ret = []
-    for i in range(len(s)):
-        ret.append([])
-        for j in range(len(s), i-1, -1):
-            word = s[i:j]
-            entries = dictionary.get(word)
-            if entries is not None:
-                ret[i].append((word, entries))
-            alt_word = "".join(map(lambda c: alternate_searches.get(c, c), word))
-            if alt_word != word:
-                al = dictionary.get(alt_word)
-                if al is not None:
-                    ret[i].append((alt_word, al))
-    return ret
 
 
 def main(stdscr):
@@ -314,56 +222,7 @@ def main(stdscr):
             update = True
         elif key == 'a' or key == '^J':  # '^J' is ENTER
             try:
-                word: cedict.CedictEntry = results[selection][1]
-                pinyin_numbers = word.pinyin.replace(" ", "")
-                pinyin_accented = transcriptions.to_pinyin(word.pinyin, accented=True)
-                zhuyin = transcriptions.to_zhuyin(word.pinyin)
-
-                unique_str = f"{word.simplified}[{word.traditional}] {pinyin_numbers}"
-                query = f"deck:\"{DECK}\" {FIELD_UNIQUE}:\"{unique_str}\""
-                # filename = f"{word.simplified}_{word.traditional}_{''.join(word.pinyin.split())}.mp3"
-
-                note_ids = anki('findNotes', query=query)
-
-                if len(note_ids) == 0:
-
-                    fields = {}
-
-                    def add_field(name, value):
-                        nonlocal fields
-                        if name != "":
-                            fields[name] = value
-
-                    colors = [(p[-1] if p[-1] in "12345" else "5") for p in word.pinyin.split(" ")]
-
-                    def colorize(array):
-                        return "".join([f"<span class=\"tone{c}\">{s}</span>" for c, s in zip(colors, array)])
-
-                    add_field(FIELD_UNIQUE, unique_str)
-                    add_field(FIELD_SIMPLIFIED, word.simplified)
-                    add_field(FIELD_SIMPLIFIED_COLOR, colorize(word.simplified))
-                    add_field(FIELD_TRADITIONAL, word.traditional)
-                    add_field(FIELD_TRADITIONAL_COLOR, colorize(word.traditional))
-                    add_field(FIELD_ZHUYIN, colorize(transcriptions.to_zhuyin(word.pinyin).split(" ")))
-                    add_field(FIELD_PINYIN, transcriptions.to_pinyin(word.pinyin))
-                    add_field(FIELD_PINYIN_COLOR, colorize(transcriptions.to_pinyin(word.pinyin, accented=True).split(" ")))
-                    add_field(FIELD_PINYIN_NUMBERS, word.pinyin.replace(" ", ""))
-                    add_field(FIELD_ENGLISH, "<br>".join(word.meanings))
-
-                    # if len(anki('getMediaFilesNames', pattern=filename)) == 0:
-                    #     tts_str = getattr(word, TTS_SRC_STRING)
-                    #     tts = gTTS(tts_str, lang=TTS_LANGUAGE)
-                    #     with io.BytesIO() as f:
-                    #         tts.write_to_fp(f)
-                    #         audio_b64 = base64.b64encode(f.getvalue()).decode('utf-8')
-                    #         anki('storeMediaFile', filename=filename, data=audio_b64)
-                    # add_field(FIELD_SOUND, f"[sound:{filename}]")
-
-                    note = {'deckName': DECK, 'modelName': NOTE_TYPE, 'fields': fields, 'options': {'duplicateScope': "deck"}, 'tags': []}
-                    note_ids = [anki('addNote', note=note)]
-                anki('addTags', notes=note_ids, tags="marked")
-                anki('guiBrowse', query=f"deck:{DECK} {FIELD_UNIQUE}:\"{unique_str}\"")
-
+                add_note(results[selection][1])
             except Exception as e:
                 stdscr.addstr(max_y-1, 0, f"(( Anki Error: {str(e)} ))")
         else:
