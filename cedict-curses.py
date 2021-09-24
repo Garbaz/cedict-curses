@@ -11,16 +11,16 @@ import gzip
 import zipfile
 import shutil
 
+from anki import anki
+
 try:
     from settings import *
 except ModuleNotFoundError:
-    shutil.copy(".default_settings.py","settings.py")
-    print("Please open the file \'settings.py\' in a text editor and set the settings.",file=stderr)
+    shutil.copy(".default_settings.py", "settings.py")
+    print("Please open the file \'settings.py\' in a text editor and set the settings.", file=stderr)
     print("Afterwards, start the program again.")
     input("\n(Press ENTER to exit...)")
     exit(1)
-
-from anki import anki
 
 logfile = open("cedict-curses.log", 'w')
 
@@ -314,15 +314,15 @@ def main(stdscr):
             update = True
         elif key == 'a' or key == '^J':  # '^J' is ENTER
             try:
-                word : cedict.CedictEntry = results[selection][1]
+                word: cedict.CedictEntry = results[selection][1]
                 pinyin_numbers = word.pinyin.replace(" ", "")
-                pinyin_accented = transcriptions.to_pinyin(word.pinyin,accented=True)
+                pinyin_accented = transcriptions.to_pinyin(word.pinyin, accented=True)
                 zhuyin = transcriptions.to_zhuyin(word.pinyin)
 
                 unique_str = f"{word.simplified}[{word.traditional}] {pinyin_numbers}"
                 query = f"deck:\"{DECK}\" {FIELD_UNIQUE}:\"{unique_str}\""
                 # filename = f"{word.simplified}_{word.traditional}_{''.join(word.pinyin.split())}.mp3"
-                
+
                 note_ids = anki('findNotes', query=query)
 
                 if len(note_ids) == 0:
@@ -347,7 +347,7 @@ def main(stdscr):
                     add_field(FIELD_ZHUYIN, colorize(transcriptions.to_zhuyin(word.pinyin).split(" ")))
                     add_field(FIELD_PINYIN, transcriptions.to_pinyin(word.pinyin))
                     add_field(FIELD_PINYIN_COLOR, colorize(transcriptions.to_pinyin(word.pinyin, accented=True).split(" ")))
-                    add_field(FIELD_PINYIN_NUMBERS, word.pinyin.replace(" ",""))
+                    add_field(FIELD_PINYIN_NUMBERS, word.pinyin.replace(" ", ""))
                     add_field(FIELD_ENGLISH, "<br>".join(word.meanings))
 
                     # if len(anki('getMediaFilesNames', pattern=filename)) == 0:
