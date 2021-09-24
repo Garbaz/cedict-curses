@@ -28,9 +28,8 @@ def anki(action, **params):
     return response['result']
 
 
-def unique_string(word):
-    pinyin_numbers = word.pinyin.replace(" ", "")
-    return  f"{word.simplified}[{word.traditional}] {pinyin_numbers}"
+def unique_string(simplified, traditional, pinyin):
+    return f"{simplified}[{traditional}] {transcriptions.to_pinyin(pinyin,accented=False).replace(' ', '')}"
 
 
 def fill_fields(word):
@@ -46,19 +45,19 @@ def fill_fields(word):
     def colorize(array):
         return "".join([f"<span class=\"tone{c}\">{s}</span>" for c, s in zip(colors, array)])
 
-    add_field(FIELD_UNIQUE, unique_string(word))
+    add_field(FIELD_UNIQUE, unique_string(word.simplified, word.traditional, word.pinyin))
     add_field(FIELD_SIMPLIFIED, word.simplified)
     add_field(FIELD_SIMPLIFIED_COLOR, colorize(word.simplified))
     add_field(FIELD_TRADITIONAL, word.traditional)
     add_field(FIELD_TRADITIONAL_COLOR, colorize(word.traditional))
-    add_field(FIELD_ZHUYIN, colorize(transcriptions.to_zhuyin(word.pinyin).split(" ")))
+    add_field(FIELD_ZHUYIN, transcriptions.to_zhuyin(word.pinyin))
+    add_field(FIELD_ZHUYIN_COLOR, colorize(transcriptions.to_zhuyin(word.pinyin).split(" ")))
     add_field(FIELD_PINYIN, transcriptions.to_pinyin(word.pinyin))
     add_field(FIELD_PINYIN_COLOR, colorize(transcriptions.to_pinyin(word.pinyin, accented=True).split(" ")))
     add_field(FIELD_PINYIN_NUMBERS, word.pinyin.replace(" ", ""))
     add_field(FIELD_ENGLISH, "<br>".join(word.meanings))
-    
-    return fields
 
+    return fields
 
 
 def add_note(word):
@@ -66,7 +65,7 @@ def add_note(word):
     # pinyin_accented = transcriptions.to_pinyin(word.pinyin, accented=True)
     # zhuyin = transcriptions.to_zhuyin(word.pinyin)
 
-    unique_str = unique_string(word)
+    unique_str = unique_string(word.simplfied, word.traditiona, word.pinyin)
     query = f"deck:\"{DECK}\" {FIELD_UNIQUE}:\"{unique_str}\""
     # filename = f"{word.simplified}_{word.traditional}_{''.join(word.pinyin.split())}.mp3"
 
@@ -87,4 +86,3 @@ def add_note(word):
         note_ids = [anki('addNote', note=note)]
     anki('addTags', notes=note_ids, tags="marked")
     anki('guiBrowse', query=f"deck:{DECK} {FIELD_UNIQUE}:\"{unique_str}\"")
-
