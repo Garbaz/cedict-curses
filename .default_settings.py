@@ -36,14 +36,6 @@ FIELD_PINYIN_COLOR = ""
 FIELD_PINYIN_NUMBERS = "Pinyin (Numbers)"
 FIELD_ENGLISH = "English"
 
-"""
-Whether or not to use traditional instead of simplified characters when adding a new card.
-Values:
-    False - Simplified
-    True  - Traditional
-"""
-ADD_TRADITIONAL_CHARACTERS = False
-
 ##### Other Settings #####
 
 """
