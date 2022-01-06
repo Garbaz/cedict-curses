@@ -64,11 +64,13 @@ def add_note(word):
     # pinyin_accented = transcriptions.to_pinyin(word.pinyin, accented=True)
     # zhuyin = transcriptions.to_zhuyin(word.pinyin)
 
-    unique_str = unique_string(word.simplfied, word.traditiona, word.pinyin)
+    unique_str = unique_string(word.simplified, word.traditional, word.pinyin)
     query = f"deck:\"{DECK}\" {FIELD_UNIQUE}:\"{unique_str}\""
     # filename = f"{word.simplified}_{word.traditional}_{''.join(word.pinyin.split())}.mp3"
 
     note_ids = anki('findNotes', query=query)
+
+    added_new_note = False
 
     if len(note_ids) == 0:
 
@@ -83,5 +85,9 @@ def add_note(word):
 
         note = {'deckName': DECK, 'modelName': NOTE_TYPE, 'fields': fill_fields(word), 'options': {'duplicateScope': "deck"}, 'tags': []}
         note_ids = [anki('addNote', note=note)]
+        added_new_note = True
     anki('addTags', notes=note_ids, tags="marked")
-    anki('guiBrowse', query=f"deck:{DECK} {FIELD_UNIQUE}:\"{unique_str}\"")
+    if OPEN_BROWSER:
+        anki('guiBrowse', query=f"deck:{DECK} {FIELD_UNIQUE}:\"{unique_str}\"")
+    
+    return added_new_note

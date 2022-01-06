@@ -1,7 +1,6 @@
 import curses
 from sys import argv
 from dragonmapper import transcriptions
-import curses
 import pyperclip
 import webbrowser
 import unicodedata
@@ -11,7 +10,7 @@ try:
     from settings import *
 except ModuleNotFoundError:
     shutil.copy(".default_settings.py", "settings.py")
-    print("Please open the file \'settings.py\' in a text editor and set the settings.")
+    print("Please open the file 'settings.py' in a text editor and set the settings.")
     print("Afterwards, start the program again.")
     input("\n(Press ENTER to exit...)")
     exit(1)
@@ -19,26 +18,10 @@ except ModuleNotFoundError:
 from anki import add_note
 from cedict import find_all_words
 
-logfile = open("cedict-curses.log", 'w')
-
-
+logfile = open("cedict-curses.log", "w")
 
 
 def main(stdscr):
-    # curses.mousemask(1)
-
-    curses.curs_set(0)
-    curses.start_color()
-    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_BLACK)
-
-    # stdscr.nodelay(True)
-
-    stdscr.clear()
-
     sentence = ""
     words = [[]]
     cursor = 0
@@ -60,6 +43,20 @@ def main(stdscr):
         update_sentence(pyperclip.paste())
     else:
         update_sentence(argv[1])
+    
+    # curses.mousemask(curses.BUTTON3_PRESSED)
+    curses.curs_set(0)
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_BLACK)
+
+    # stdscr.nodelay(True)
+
+    stdscr.clear()
+
 
     while True:
         if update:
@@ -119,10 +116,13 @@ def main(stdscr):
                         _, x_offset = stdscr.getyx()
                     stdscr.addstr(line, x_offset, text, *args, **vargs)
                 else:
-                    stdscr.addstr(max_y - 1, 0, "(( Too many results! Make window bigger ))")
+                    stdscr.addstr(
+                        max_y - 1, 0, "(( Too many results! Make window bigger ))"
+                    )
 
             def addstr_at_line_seq(text, *args, **vargs):
                 addstr_at_line(-1, text, *args, **vargs)
+
             # def addch_at_line()
 
             if cursor < len(words):
@@ -144,12 +144,16 @@ def main(stdscr):
 
                         ## Word (Simplified) ##
                         for i in range(len(e.simplified)):
-                            addstr_at_line_seq(e.simplified[i], curses.color_pair(colors[i]))
+                            addstr_at_line_seq(
+                                e.simplified[i], curses.color_pair(colors[i])
+                            )
                         addstr_at_line_seq("｜")
 
                         ## Word (Traditional) ##
                         for i in range(len(e.traditional)):
-                            addstr_at_line_seq(e.traditional[i], curses.color_pair(colors[i]))
+                            addstr_at_line_seq(
+                                e.traditional[i], curses.color_pair(colors[i])
+                            )
 
                         ## Pinyin/Zhuyin ##
                         addstr_at_line_seq("（")
@@ -159,7 +163,9 @@ def main(stdscr):
                                 if show_zhuyin:
                                     reading = transcriptions.to_zhuyin(pinyin)
                                 else:
-                                    reading = transcriptions.to_pinyin(pinyin, accented=True)
+                                    reading = transcriptions.to_pinyin(
+                                        pinyin, accented=True
+                                    )
                             except ValueError:
                                 reading = pinyin
                             addstr_at_line_seq(reading, curses.color_pair(colors[i]))
@@ -181,7 +187,7 @@ def main(stdscr):
                 stdscr.addstr(results[selection][0], 0, "＞")
 
         stdscr.refresh()
-        key = curses.keyname(stdscr.getch()).decode('utf-8')
+        key = curses.keyname(stdscr.getch()).decode("utf-8")
 
         # print(f"Key pressed: '{key}'", file=logfile)
 
@@ -195,53 +201,64 @@ def main(stdscr):
                 cursor = len(sentence) - 1
             return old_cursor != cursor
 
-        if key == 'q' or key == '^[':  # '^[' is ESC
+        if key == "q" or key == "^[":  # '^[' is ESC
             return
-        elif key == ' ' or key == 'M-c':  # 'M-c' is for wide space (not accurate, but works)
+        elif (
+            key == " " or key == "M-c"
+        ):  # 'M-c' is for wide space (not accurate, but works)
             update_sentence(pyperclip.paste())
-        elif key == 'KEY_LEFT' or key == 'h':
-            update |= move_cursor_clamp(cursor-1)
-        elif key == 'KEY_RIGHT' or key == 'l':
-            update |= move_cursor_clamp(cursor+1)
-        elif key == 'KEY_END':
+        elif key == "KEY_LEFT" or key == "h":
+            update |= move_cursor_clamp(cursor - 1)
+        elif key == "KEY_RIGHT" or key == "l":
+            update |= move_cursor_clamp(cursor + 1)
+        elif key == "KEY_END":
             update |= move_cursor_clamp(len(sentence) - 1)
-        elif key == 'KEY_HOME':
+        elif key == "KEY_HOME":
             update |= move_cursor_clamp(0)
-        elif key == 'KEY_PPAGE':
-            update |= move_cursor_clamp(cursor-10)
-        elif key == 'KEY_NPAGE':
-            update |= move_cursor_clamp(cursor+10)
-        elif key == 'KEY_UP' or key == 'k':
+        elif key == "KEY_PPAGE":
+            update |= move_cursor_clamp(cursor - 10)
+        elif key == "KEY_NPAGE":
+            update |= move_cursor_clamp(cursor + 10)
+        elif key == "KEY_UP" or key == "k":
             if selection > 0:
                 selection -= 1
-        elif key == 'KEY_DOWN' or key == 'j':
+        elif key == "KEY_DOWN" or key == "j":
             if selection < len(results) - 1:
                 selection += 1
-        elif key == 'r':
+        elif key == "r":
             show_zhuyin = not show_zhuyin
             update = True
-        elif key == 'a' or key == '^J':  # '^J' is ENTER
+        elif key == "a" or key == "^J":  # '^J' is ENTER
             try:
-                add_note(results[selection][1])
+                if add_note(results[selection][1]):
+                    stdscr.addstr(max_y - 1, 0, f"(( Anki: Added new note for \"{results[selection][1].simplified}|{results[selection][1].traditional}\". ))")
+                else:
+                    stdscr.addstr(max_y - 1, 0, f"(( Anki: Found & marked note for \"{results[selection][1].simplified}|{results[selection][1].traditional}\". ))")    
             except Exception as e:
-                stdscr.addstr(max_y-1, 0, f"(( Anki Error: {str(e)} ))")
+                stdscr.addstr(max_y - 1, 0, f"(( Anki ERROR: {str(e)} ))")
         else:
             if selection < len(results):
                 word_simp = results[selection][1].simplified
                 word_trad = results[selection][1].traditional
-                if key == 'l' or key == 'KEY_F(1)':
-                    webbrowser.open_new(f"https://dict.naver.com/linedict/zhendict/dict.html#/cnen/search?query={word_simp}")
-                elif key == 'f' or key == 'KEY_F(2)':
+                if key == "l" or key == "KEY_F(1)":
+                    webbrowser.open_new(
+                        f"https://dict.naver.com/linedict/zhendict/dict.html#/cnen/search?query={word_simp}"
+                    )
+                elif key == "f" or key == "KEY_F(2)":
                     webbrowser.open_new(f"https://forvo.com/word/{word_simp}/#zh")
-                elif key == 'F' or key == 'KEY_F(14)':
+                elif key == "F" or key == "KEY_F(14)":
                     webbrowser.open_new(f"https://forvo.com/word/{word_trad}/#zh")
-                elif key == 'g' or key == 'KEY_F(3)':
-                    webbrowser.open_new(f"https://resources.allsetlearning.com/chinese/grammar/{word_simp}")
-                elif key == 'i' or key == 'KEY_F(4)':
+                elif key == "g" or key == "KEY_F(3)":
+                    webbrowser.open_new(
+                        f"https://resources.allsetlearning.com/chinese/grammar/{word_simp}"
+                    )
+                elif key == "i" or key == "KEY_F(4)":
                     webbrowser.open_new(f"https://www.iciba.com/word?w={word_simp}")
-                elif key == 'm' or key == 'KEY_F(5)':
-                    webbrowser.open_new(f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={word_simp}")
-                elif key == 't' or key == 'KEY_F(6)':
+                elif key == "m" or key == "KEY_F(5)":
+                    webbrowser.open_new(
+                        f"https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb={word_simp}"
+                    )
+                elif key == "t" or key == "KEY_F(6)":
                     webbrowser.open_new(f"https://www.moedict.tw/~{word_trad}")
 
 

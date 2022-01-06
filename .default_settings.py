@@ -17,6 +17,12 @@ Independent of whether a new note is created or not.
 MARK_NOTE = True
 
 """
+Whether or not to open the Anki Browser with the note selected.
+Independent of whether a new note is created or not.
+"""
+OPEN_BROWSER=True
+
+"""
 The fields of the note where to insert which component of the entry.
 If left as an empty string, the component will be skipped.
 

@@ -22,7 +22,8 @@ alternate_searches = {
 def error_failed_to_read_dict():
     print("Could not find dictionary file 'cedict_1_0_ts_utf-8_mdbg.txt'. Please download CC-CEDICT from", file=stderr)
     print("https://www.mdbg.net/chinese/dictionary?page=cedict", file=stderr)
-    print("and extract it in this folder.", file=stderr)
+    print("and put it in this folder.", file=stderr)
+    input("\nPress RETURN to exit...")
     exit(1)
 
 
