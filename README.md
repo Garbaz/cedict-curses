@@ -1,6 +1,6 @@
 # CEDICT Curses
 
-Interactive analzing of a Chinese sentence and looking up words in the CC-CEDCIT dictionary. With Pinyin, Zhuyin and tone colors.
+Interactive analyzing of a Chinese sentence and looking up words in the CC-CEDCIT dictionary. With Pinyin, Zhuyin and tone colors.
 
 ## __Features__
 
