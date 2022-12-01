@@ -25,7 +25,7 @@ Download and extract the [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?pag
 
 When starting the program for the first time, it will create a `settings.py` file and prompt you to edit it.
 
-If you want to use the Anki interface, make sure you have the [Anki Connect](https://ankiweb.net/shared/info/2055492159) addon installed in Anki and set the settings in `settings.py` according to your setup (deck, note type, field names). The default values are just what I use, so they won't work out out of the box.
+If you want to use the Anki interface, make sure you have the [Anki Connect](https://ankiweb.net/shared/info/2055492159) addon installed in Anki and set the settings in `settings.py` according to your setup (deck, note type, field names). The default values are just what I use, so they won't work out of the box.
 
 ## __Usage__
 
